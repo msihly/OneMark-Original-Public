@@ -1,0 +1,67 @@
+[
+	{
+		"imgSrc"	:	"images/800 x 600.jpg",
+		"url"		:	"https://www.google.com",
+		"caption"	:	"Google"
+	},
+
+	{
+		"imgSrc"	:	"images/800 x 800.jpg",
+		"url"		:	"https://www.twitch.tv",
+		"caption"	:	"Twitch"
+	},	
+
+	{
+		"imgSrc"	:	"images/1280 x 720.jpg",
+		"url"		:	"https://www.facebook.com",
+		"caption"	:	"Facebook"
+	},	
+
+	{
+		"imgSrc"	:	"images/1280 x 1024.jpg",
+		"url"		:	"https://www.twitter.com",
+		"caption"	:	"Twitter"
+	},
+
+	{
+		"imgSrc"	:	"images/1360 x 768.jpg",
+		"url"		:	"https://www.instagram.com",
+		"caption"	:	"Instagram"
+	},
+
+	{
+		"imgSrc"	:	"images/1920 x 1080.jpg",
+		"url"		:	"https://www.youtube.com",
+		"caption"	:	"Youtube"
+	},
+
+	{
+		"imgSrc"	:	"images/600 x 800.jpg",
+		"url"		:	"https://www.google.com",
+		"caption"	:	"Google"
+	},
+
+	{
+		"imgSrc"	:	"images/720 x 1280.jpg",
+		"url"		:	"https://www.facebook.com",
+		"caption"	:	"Facebook"
+	},
+
+	{
+		"imgSrc"	:	"images/1024 x 1280.jpg",
+		"url"		:	"https://www.twitter.com",
+		"caption"	:	"Twitter"
+	},
+
+	{
+		"imgSrc"	:	"images/768 x 1360.jpg",
+		"url"		:	"https://www.instagram.com",
+		"caption"	:	"Instagram"
+	},
+
+	{
+		"imgSrc"	:	"images/1080 x 1920.jpg",
+		"url"		:	"https://www.youtube.com",
+		"caption"	:	"Youtube"
+	}
+]

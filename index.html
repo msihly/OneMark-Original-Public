@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>OneMark</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="icon" type="image/ico" href="images/assets/favicon.ico">
+		<link href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,100italic,300italic,400italic,500italic,500,700,700italic,900,900italic' rel='stylesheet'>
+		<link rel="stylesheet" href="css/stylesheet.css">
+		<script src="js/login.js"></script>
+	</head>
+	<body>
+        <div class="login-wrapper">
+            <form class="pad-ctn tab-content active" id="login-form" action="php/login.php" method="POST" enctype="multipart/form-data">
+                <label for="login-username">Username</label>
+                    <input type="text" placeholder="Enter your username" name="username" id="login-username" required>
+                <label for="login-password">Password</label>
+                    <input type="password" placeholder="Enter your password" name="password" id="login-password" required>
+                <button type="submit" class="button full-width" id="Login" name="login">Login</button>
+            </form>
+            <form class="pad-ctn tab-content" id="register-form" action="php/register.php" method="POST" enctype="multipart/form-data">
+                <label for="register-email">Email</label>
+                    <input type="email" placeholder="Enter your email" name="email" id="register-email" required>
+                <label for="register-username">Username</label>
+                    <input type="text" placeholder="Enter your username" name="username" id="register-username" required>
+                <label for="register-password">Password</label>
+                    <input type="password" placeholder="Enter your password" name="password" id="register-password" required>
+                <label for="register-password-confirm">Confirm Password</label>
+                    <input type="password" placeholder="Re-enter your password" name="password-confirm" id="register-password-confirm" required>
+                <button type="submit" class="button full-width" id="Register" name="register">Register</button>
+            </form>
+            <div class="tab-wrapper">
+                <h2 data-content="login-form" class="tab active">Login</h2>
+                <h2 data-content="register-form" class="tab">Register</h2>
+            </div>
+        </div>
+	</body>
+	<footer class="footer"></footer>
+</html>
