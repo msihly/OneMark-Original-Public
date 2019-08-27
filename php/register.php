@@ -1,10 +1,10 @@
 <?php
 include("db-connect.php");
+include("auth-tokens.php");
+include_once("logging.php");
 
 try {
-    if(!empty($_POST) && isset($_POST["register"])) {
-        echo "<pre>" . var_dump($_POST) . "</pre>";
-
+    if(!empty($_POST)) {
         $email = $_POST["email"];
         $username = $_POST["username"];
         $password = $_POST["password"];
@@ -12,13 +12,13 @@ try {
         $date = date('Y-m-d H:i:s');
 
         if(empty($email) || empty($username) || empty($password) || empty($passwordConf)) {
-            echo "All fields are required";
+            echo json_encode(["Success" => false, "Message" => "All fields are required"]);
         } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            echo "Enter a valid email";
+            echo json_encode(["Success" => false, "Message" => "Enter a valid email"]);
         } else if ($password != $passwordConf) {
-            echo "Passwords do not match";
+            echo json_encode(["Success" => false, "Message" => "Passwords do not match"]);
         } else if (strlen($password) < 8) {
-            echo "Password must be a minimum of 8 characters";
+            echo json_encode(["Success" => false, "Message" => "Password must be a minimum of 8 characters"]);
         } else {
             $conn->beginTransaction();
 
@@ -42,14 +42,17 @@ try {
 
             $conn->commit();
 
-            echo "User registered";
+            setcookie("authToken", createToken($conn, $userID, 14), time() + (86400 * 14), "", ""); // , TRUE, TRUE);   --removed for local testing without https
+
+            echo json_encode(["Success" => true, "Message" => "Registration successful"]);
         }
     } else {
-        echo "'Register' failed";
+        echo json_encode(["Success" => false, "Message" => "Invalid form information. Please try again."]);
     }
 } catch(PDOException $e) {
     $conn->rollback();
-	echo "Error: " . $e->getMessage();
+    logToFile("Error: " . $e->getMessage(), "e");
+	echo json_encode(["Success" => false, "Message" => "Error logged to file"]);
 }
 
 $conn = null;

@@ -1,31 +1,49 @@
 <?php
 include("db-connect.php");
+include_once("logging.php");
 
 try {
-    $stmt = ""; //REDACTED
-    $query = $conn->prepare($stmt);
-    $query->execute();
+    $conn->beginTransaction();
 
-    $stmt = ""; //REDACTED
-    $query = $conn->prepare($stmt);
-    $query->execute();
+    $query = ""; //REDACTED
+    $stmt = $conn->prepare($query);
+    $stmt->execute();
 
-    $stmt = ""; //REDACTED
-    $query = $conn->prepare($stmt);
-    $query->execute();
+    $query = ""; //REDACTED
+    $stmt = $conn->prepare($query);
+    $stmt->execute();
 
-    $stmt = ""; //REDACTED
-    $query = $conn->prepare($stmt);
-    $query->execute();
+    $query = ""; //REDACTED
+    $stmt = $conn->prepare($query);
+    $stmt->execute();
 
-    $stmt = ""; //REDACTED
-    $query = $conn->prepare($stmt);
-    $query->execute();
+    $query = ""; //REDACTED
+    $stmt = $conn->prepare($query);
+    $stmt->execute();
 
-    echo "Database successfully created";
+    $query = ""; //REDACTED
+    $stmt = $conn->prepare($query);
+    $stmt->execute();
+
+    $query = ""; //REDACTED
+    $stmt = $conn->prepare($query);
+    $stmt->execute();
+
+    $query = ""; //REDACTED
+    $stmt = $conn->prepare($query);
+    $stmt->execute();
+
+    $query = ""; //REDACTED
+    $stmt = $conn->prepare($query);
+    $stmt->execute();
+
+    $conn->commit();
+
+    echo json_encode(["Success" => true, "Message" => "Database successfully created"]);
 } catch(PDOException $e) {
     $conn->rollback();
-	echo "Error: " . $e->getMessage();
+    logToFile("Error: " . $e->getMessage(), "e");
+	echo json_encode(["Success" => false, "Message" => "Error logged to file"]);
 }
 
 $conn = null;

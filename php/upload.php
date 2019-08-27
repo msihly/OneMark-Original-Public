@@ -25,11 +25,11 @@ if (isset($_FILES["imageURL"]) && $_FILES["imageURL"]["error"] != 4) {
     if (empty($errors)) {
         if (!is_dir($dir)) {mkdir($dir, 0777, true);}
         move_uploaded_file($file_tmp, $file_path);
-        return ["file" => $file_path, "error" => false];
+        return ["Success" => true, "File" => $file_path];
     } else {
-        return ["errors" => $errors, "error" => true];
+        return ["Success" => false, "Errors" => $errors];
     }
 } else {
-    return ["file" => "../images/assets/No-Image.jpg", "error" => false];
+    return ["Success" => true, "File" => "../images/assets/No-Image.jpg"];
 }
 ?>

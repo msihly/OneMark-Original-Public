@@ -109,7 +109,7 @@ button:hover {
     box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.55);
 }
 
-input {
+input:not([type="checkbox"]) {
 	width: 100%;
 	padding: 0.5rem 1rem;
 	margin: 0.7rem auto;
@@ -365,7 +365,7 @@ label {
     color: #fff;
 }
 
-/* TOAST NOTIFICATION */
+/* TOAST NOTIFICATION / INLINE MESSAGES */
 .toast {
     position: fixed;
     bottom: 0;
@@ -373,10 +373,40 @@ label {
     padding: 16px;
     margin: 0 0 16px 16px;
     min-width: 250px;
-    background-color: #333;
-    color: #dfdfdf;
     text-align: center;
     z-index: 10;
+    color: #dfdfdf;
+    text-shadow: 2px 2px 3px #000;
+    background-color: #333;
+    box-shadow: 2px 2px 3px #000;
+}
+
+.inline-message {
+    padding: 8px;
+    margin: 8px 0;
+    width: 100%;
+    color: #dfdfdf;
+    background-color: #333;
+    box-shadow: 2px 2px 3px #000;
+    box-sizing: border-box;
+    overflow: auto;
+    text-overflow: clip;
+}
+
+.bg-green {
+    background-color: rgb(10, 130, 10);
+}
+
+.bg-blue {
+    background-color: rgb(40, 75, 190);
+}
+
+.bg-red {
+    background-color: rgb(150, 25, 25);
+}
+
+.bg-yellow {
+    background-color: rgb(160, 110, 10);
 }
 
 .fade-in-out {

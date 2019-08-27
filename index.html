@@ -11,14 +11,16 @@
 	</head>
 	<body>
         <div class="login-wrapper">
-            <form class="pad-ctn tab-content active" id="login-form" action="php/login.php" method="POST" enctype="multipart/form-data">
+            <form class="pad-ctn tab-content active" id="login-form" enctype="multipart/form-data">
                 <label for="login-username">Username</label>
                     <input type="text" placeholder="Enter your username" name="username" id="login-username" required>
                 <label for="login-password">Password</label>
                     <input type="password" placeholder="Enter your password" name="password" id="login-password" required>
-                <button type="submit" class="button full-width" id="Login" name="login">Login</button>
+                <label for="login-remember">Keep Me Logged In</label>
+                    <input type="checkbox" name="remember-me" id="login-remember">
+                <button type="submit" class="button full-width" id="login" name="login">Login</button>
             </form>
-            <form class="pad-ctn tab-content" id="register-form" action="php/register.php" method="POST" enctype="multipart/form-data">
+            <form class="pad-ctn tab-content" id="register-form" enctype="multipart/form-data">
                 <label for="register-email">Email</label>
                     <input type="email" placeholder="Enter your email" name="email" id="register-email" required>
                 <label for="register-username">Username</label>
@@ -27,7 +29,8 @@
                     <input type="password" placeholder="Enter your password" name="password" id="register-password" required>
                 <label for="register-password-confirm">Confirm Password</label>
                     <input type="password" placeholder="Re-enter your password" name="password-confirm" id="register-password-confirm" required>
-                <button type="submit" class="button full-width" id="Register" name="register">Register</button>
+                <input type="checkbox" name="remember-me" id="register-remember">Stay logged in?<br>
+                <button type="submit" class="button full-width" id="register" name="register">Register</button>
             </form>
             <div class="tab-wrapper">
                 <h2 data-content="login-form" class="tab active">Login</h2>

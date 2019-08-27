@@ -4,3 +4,5 @@ php/variables-test.php
 sql/db-setup.sql
 sql/queries.sql
 sql/testdb.accdb
+php/info.php
+php/test.php
