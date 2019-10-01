@@ -12,3 +12,7 @@ php/logs/php-errors.log
 *.ai
 php/db-setup.php
 php/db-connect.php
+php/db-connect.php
+php/db-connect.php
+php/logs/php-errors.log
+php/db-connect.php
