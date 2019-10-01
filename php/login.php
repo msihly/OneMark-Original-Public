@@ -35,7 +35,7 @@ try {
                 $userID = $result[0]["UserID"];
                 $passwordHash = $result[0]["PasswordHash"];
                 if (password_verify($password, $passwordHash)) {
-                    if (isset($_POST["remember-me"])) { setcookie("authToken", createToken($conn, $userID, 14), time() + (86400 * 14), TRUE, TRUE); }
+                    if (isset($_POST["remember-me"])) { setcookie("authToken", createToken($conn, $userID, 14), time() + (86400 * 14), "", ""); } // , TRUE, TRUE);   --removed for local testing without https
                     $_SESSION["uid"] = $userID;
                     $_SESSION["username"] = $username;
 

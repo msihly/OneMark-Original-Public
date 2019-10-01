@@ -6,3 +6,9 @@ sql/queries.sql
 sql/testdb.accdb
 php/info.php
 php/test.php
+*.log
+php/logs/development.log
+php/logs/php-errors.log
+*.ai
+php/db-setup.php
+php/db-connect.php

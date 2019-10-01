@@ -5,68 +5,78 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="icon" type="image/ico" href="images/assets/favicon.ico">
-		<link href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,100italic,300italic,400italic,500italic,500,700,700italic,900,900italic' rel='stylesheet'>
 		<link rel="stylesheet" href="css/stylesheet.css">
 		<script src="js/main.js"></script>
 		<base target="_blank">
 	</head>
 	<body>
-        <button class="button" id="open-upload-modal" data-modal="upload-bookmark">Upload Bookmark</button>
-        <button class="button" id="logout">Logout</button>
-		<div class="bookmark-container" id="bookmark-container">
-        </div>
-		<div class="modal-container hidden" id="upload-bookmark" data-modal="upload-bookmark" data-listener="modalClose">
-			<div class="modal-content">
-				<span class="close" id="close-upload-modal" data-modal="upload-bookmark" data-listener="modalClose">&times;</span>
-				<form class="pad-ctn" id="upload-form" enctype="multipart/form-data">
-					<div class="preview-output">
-						<a class="bookmark-preview" id="upload-preview-url" href="#">
-							<div class="title" id="upload-preview-title">No title</div>
-							<img class="image" id="upload-preview-image" src="images/assets/No-Image.jpg">
-						</a>
-					</div>
-					<input type="file" class="file-input-hidden" name="imageURL" id="upload-form-image" accept="image/png, image/jpeg" data-label="upload-image-name" data-preview="upload-preview-image" data-listener="fileUpload">
-					<label for="upload-form-image" class="file-input">
-						<span class="file-input-button">
-							<img src="images/assets/Upload.png" class="file-input-img">
-							Upload Image
-						</span>
-						<span class="file-input-filename hidden" id="upload-image-name"></span>
-					</label>
-					<label for="upload-form-url">URL</label>
-						<input type="text" placeholder="Enter URL" name="pageURL" id="upload-form-url" data-preview="upload-preview-url" data-attr="href" data-invalid-value="#" data-listener="inputPreview" required>
-					<label for="upload-form-title">Title</label>
-						<input type="text" placeholder="Enter Title" name="title" id="upload-form-title" data-preview="upload-preview-title" data-attr="innerHTML" data-invalid-value="No Title" data-listener="inputPreview" required>
-					<button class="submit full-width" id="upload-submit" type="submit">Submit</button>
-				</form>
-			</div>
-        </div>
-		<div class="modal-container hidden" id="edit-bookmark" data-modal="edit-bookmark" data-listener="modalClose">
-			<div class="modal-content">
-				<span class="close" id="close-edit-modal" data-modal="edit-bookmark" data-listener="modalClose">&times;</span>
-				<form class="pad-ctn" id="edit-form" enctype="multipart/form-data">
-					<div class="preview-output">
-						<a class="bookmark-preview" id="edit-preview-url" href="#">
-							<div class="title" id="edit-preview-title">No Title</div>
-							<img class="image" id="edit-preview-image" src="images/assets/No-Image.jpg">
-						</a>
-					</div>
-					<input type="file" class="file-input-hidden" name="imageURL" id="edit-form-image" accept="image/png, image/jpeg" data-label="edit-image-name" data-preview="edit-preview-image" data-listener="fileUpload">
-					<label for="edit-form-image" class="file-input">
-						<span class="file-input-button">
-							<img src="images/assets/Upload.png" class="file-input-img">
-							Upload Image
-						</span>
-						<span class="file-input-filename hidden" id="edit-image-name"></span>
-					</label>
-					<label for="edit-form-url">URL</label>
-						<input type="text" placeholder="Enter URL" name="pageURL" id="edit-form-url" data-preview="edit-preview-url" data-attr="href" data-invalid-value="#" data-listener="inputPreview" required>
-					<label for="edit-form-title">Title</label>
-						<input type="text" placeholder="Enter Title" name="title" id="edit-form-title" data-preview="edit-preview-title" data-attr="innerHTML" data-invalid-value="No Title" data-listener="inputPreview" required>
-					<button class="submit full-width" id="edit-submit" type="submit">Submit</button>
-				</form>
-			</div>
-        </div>
+        <!-- <div id="loading-modal"> -->
+            <nav id="navbar">
+                <div class="nav-btn" id="open-upload-modal" data-modal="upload-bookmark"></div>
+                <input type="text" placeholder="Search..." id="searchbar">
+                <div class="nav-btn" id="sidemenu" data-menu="sidemenu-content"></div>
+                <div class="hidden" id="sidemenu-content">
+                    <div class="sidemenu-btn" id="logout">LOGOUT</div>
+                </div>
+            </nav>
+            <div class="bookmark-container" id="bookmark-container"></div>
+            <div class="modal-container hidden" id="upload-bookmark" data-modal="upload-bookmark" data-listener="modalClose">
+                <div class="modal-content pad-ctn-2">
+                    <span class="close" id="close-upload-modal" data-modal="upload-bookmark" data-listener="modalClose">&times;</span>
+                    <div class="preview-output bookmark-preview" id="upload-preview" data-href="#" data-listener="preview">
+                        <div class="title" id="upload-preview-title">No Title</div>
+                        <img class="image" id="upload-preview-image" src="images/assets/No-Image.jpg">
+                    </div>
+                    <form id="upload-form" enctype="multipart/form-data">
+                        <label for="upload-form-image" class="file-input-group">
+                            <span class="file-input-filename hidden" id="upload-image-name"></span>
+                            <span class="file-input-button">
+                                <img src="images/assets/Upload.png" class="file-input-icon">
+                                Upload Image
+                            </span>
+                        </label>
+                        <input type="file" class="file-input" name="imageURL" id="upload-form-image" accept="image/png, image/jpeg" data-label="upload-image-name" data-preview="upload-preview-image" data-listener="fileUpload">
+                        <div class="form-group">
+                            <input type="text" placeholder="Enter URL" name="pageURL" id="upload-form-url" data-preview="upload-preview" data-attr="data-href" data-invalid-value="#" data-listener="inputPreview" required>
+                            <label for="upload-form-url">URL</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" placeholder="Enter Title" name="title" id="upload-form-title" data-preview="upload-preview-title" data-attr="innerHTML" data-invalid-value="No Title" data-listener="inputPreview" required>
+                            <label for="upload-form-title">Title</label>
+                        </div>
+                        <button class="button-hollow submit" id="upload-submit" type="submit">SUBMIT</button>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-container hidden" id="edit-bookmark" data-modal="edit-bookmark" data-listener="modalClose">
+                <div class="modal-content pad-ctn-2">
+                    <span class="close" id="close-edit-modal" data-modal="edit-bookmark" data-listener="modalClose">&times;</span>
+                    <div class="preview-output bookmark-preview" id="edit-preview" data-href="#" data-listener="preview">
+                        <div class="title" id="edit-preview-title">No Title</div>
+                        <img class="image" id="edit-preview-image" src="images/assets/No-Image.jpg">
+                    </div>
+                    <form id="edit-form" enctype="multipart/form-data">
+                        <label for="edit-form-image" class="file-input-group">
+                            <span class="file-input-filename hidden" id="edit-image-name"></span>
+                            <span class="file-input-button">
+                                <img src="images/assets/Upload.png" class="file-input-icon">
+                                Upload Image
+                            </span>
+                        </label>
+                        <input type="file" class="file-input" name="imageURL" id="edit-form-image" accept="image/png, image/jpeg" data-label="edit-image-name" data-preview="edit-preview-image" data-listener="fileUpload">
+                        <div class="form-group">
+                            <input type="text" placeholder="Enter URL" name="pageURL" id="edit-form-url" data-preview="edit-preview" data-attr="data-href" data-invalid-value="#" data-listener="inputPreview" required>
+                            <label for="edit-form-url">URL</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" placeholder="Enter Title" name="title" id="edit-form-title" data-preview="edit-preview-title" data-attr="innerHTML" data-invalid-value="No Title" data-listener="inputPreview" required>
+                            <label for="edit-form-title">Title</label>
+                        </div>
+                        <button class="button-hollow submit" id="edit-submit" type="submit">SUBMIT</button>
+                    </form>
+                </div>
+            </div>
+        <!-- </div> -->
+        <footer class="footer"></footer>
 	</body>
-	<footer class="footer"></footer>
 </html>
