@@ -1,2 +1,5 @@
 {
+    "require": {
+        "aws/aws-sdk-php": "3.*"
+    }
 }

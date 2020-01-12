@@ -1,5 +1,5 @@
 <?php
-function logToFile(string $message, string $type = "info", string $logFile = "development") {
+function logToFile($message, string $type = "info", int $line = null, string $logFile = "development") {
     $trace = debug_backtrace(2);
     $trace = array_shift($trace);
     switch (strtolower($type)) {
@@ -9,6 +9,6 @@ function logToFile(string $message, string $type = "info", string $logFile = "de
         case "d": case "debug": $type = "DEBUG"; break;
         default: $type = "INFO"; break;
     }
-    error_log(date("[Y-m-d H:i:s]") . " [$type] [" . basename($trace["file"]) . " : " . $trace["line"] . "] $message\n", 3, "logs/" . $logFile . ".log");
+    error_log(date("[Y-m-d H:i:s]") . " [$type] [" . basename($trace["file"]) . " : " . (isset($line) ? $line : $trace["line"]) . "] " . print_r($message, TRUE) . "\n", 3, "restricted/logs/" . $logFile . ".log");
 }
 ?>

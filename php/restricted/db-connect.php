@@ -1,10 +1,10 @@
 <?php
 include_once("logging.php");
 
-$dbservername = ""; //REDACTED
-$dbusername = ""; //REDACTED
-$dbpassword = ""; //REDACTED
-$dbname = ""; //REDACTED
+$dbservername = getenv("DB_SERVER_NAME");
+$dbusername = getenv("DB_USERNAME");
+$dbpassword = getenv("DB_PASSWORD");
+$dbname = getenv("DB_NAME");
 
 try {
     $conn = new PDO("mysql:host=$dbservername;dbname=$dbname", $dbusername, $dbpassword);

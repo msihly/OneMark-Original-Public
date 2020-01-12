@@ -1,35 +1,59 @@
 <?php
+require_once("../vendor/autoload.php");
+require_once("db-functions.php");
+require_once("logging.php");
+
 if (isset($_FILES["imageURL"]) && $_FILES["imageURL"]["error"] != 4) {
+    $s3 = new Aws\S3\S3Client([
+        "version"  => "2006-03-01",
+        "region"   => "us-east-1",
+        "credentials" => [
+            "key"    => getenv("AWS_ACCESS_KEY_ID"),
+            "secret" => getenv("AWS_SECRET_ACCESS_KEY")
+        ]
+    ]);
+    $bucket = getenv("S3_BUCKET")?: false;
+    if (!$bucket) {
+        logToFile("No 'S3_BUCKET' config var found in env!", "e");
+        return ["Success" => false, "Errors" => ["Image server misconfiguartion"]];
+    }
+
     $errors = [];
-    $extensions = ["jpg", "jpeg", "png", "gif"];
+    $extensions = ["jpg", "jpeg", "png"];
 
-    $file_name = $_FILES["imageURL"]["name"];
-    $file_tmp = $_FILES["imageURL"]["tmp_name"];
-    $file_type = $_FILES["imageURL"]["type"];
-    $file_size = $_FILES["imageURL"]["size"];
-    $file_ext = explode(".", $file_name);
-    $file_ext = strtolower(end($file_ext));
+    $imageTmp = $_FILES["imageURL"]["tmp_name"];
+    $imageName = $_FILES["imageURL"]["name"];
+    $imageType = $_FILES["imageURL"]["type"];
+    $imageSize = $_FILES["imageURL"]["size"];
+    $imageExt = explode(".", $imageName);
+    $imageExt = strtolower(end($imageExt));
 
-    $hash = md5_file($file_tmp);
-    $dir = "../images/uploads/" . substr($hash, 0, 2) . "/" . substr($hash, 2, 2) . "/";
-    $file_path =  $dir . $hash . "." . $file_ext;
+    $imageHash = md5_file($imageTmp);
+    $imagePath = "uploads" . "/" . substr($imageHash, 0, 2) . "/" . substr($imageHash, 2, 2) . "/" . $imageHash . "." . $imageExt;
+    $imageURL =  "https://" . $bucket . ".s3.us-east-1.amazonaws.com/" . $imagePath;
 
-    if (!in_array($file_ext, $extensions)) {
-        $errors[] = "Extension not allowed: " . $file_name . " | " . $file_type;
-    }
-
-    if ($file_size > 2097152) {
-        $errors[] = "File size exceeds limit: " . $file_name . " | " . $file_size;
-    }
-
+    if (!in_array($imageExt, $extensions)) { $errors[] = "Extension not allowed: " . $imageName . " | " . $imageType; }
+    if ($imageSize > 2097152) { $errors[] = "Image size exceeds limit: " . $imageName . " | " . $imageSize; }
     if (empty($errors)) {
-        if (!is_dir($dir)) {mkdir($dir, 0777, true);}
-        move_uploaded_file($file_tmp, $file_path);
-        return ["Success" => true, "File" => $file_path];
+        $dupeCheck = imageExists($imageHash);
+        if ($dupeCheck) {
+            return ["Success" => true, "ImageID" => $dupeCheck["ImageID"], "ImagePath" => $dupeCheck["ImagePath"]];
+        } else {
+            //if (!is_dir($dir)) { mkdir($dir, 0777, true); }
+            //move_uploaded_file($imageTmp, $imagePath);
+            try {
+                $result = $s3->upload($bucket, $imagePath, fopen($imageTmp, "rb"), "public-read");
+                $imageID = uploadImage($imageURL, $imageHash);
+                return ["Success" => true, "ImageID" => $imageID, "ImagePath" => $imageURL];
+            } catch (Aws\S3\Exception\S3Exception $e) {
+                logToFile($e->getMessage(), "e");
+                return ["Success" => false, "Errors" => ["Image server misconfiguartion"]];
+            }
+        }
     } else {
         return ["Success" => false, "Errors" => $errors];
     }
 } else {
-    return ["Success" => true, "File" => "../images/assets/No-Image.jpg"];
+    return ["Success" => true, "ImageID" => 2, "ImagePath" => "../images/assets/No-Image.jpg"];
 }
 ?>

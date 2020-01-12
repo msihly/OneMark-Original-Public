@@ -1,6 +1,5 @@
 <?php
-include("db-connect.php");
-include("auth-tokens.php");
+require_once("db-functions.php");
 include_once("logging.php");
 
 //delete token and cookie on logout and password change
@@ -9,7 +8,7 @@ try {
     if (isset($_SESSION["uid"])) {
         echo json_encode(["Success" => true, "Message" => "User already logged in"]);
     } else if (isset($_COOKIE["authToken"])) {
-        $userID = validateToken($conn, $_COOKIE["authToken"]);
+        $userID = validateToken($_COOKIE["authToken"]);
         if ($userID === false) {
             setcookie("authToken", "", 1); //delete cookie
             echo json_encode(["Success" => false, "Message" => "Invalid authentication token"]);
@@ -23,19 +22,13 @@ try {
         if (empty($username) || empty($password)) {
             echo json_encode(["Success" => false, "Message" => "All fields are required"]);
         } else {
-            $query = "SELECT      l.UserID, l.PasswordHash
-                      FROM        Logins l
-                      WHERE       l.Username = :username;";
-            $stmt = $conn->prepare($query);
-            $stmt->bindParam(":username", $username);
-            $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $loginInfo = getLoginInfo($username);
 
-            if (!empty($result)) {
-                $userID = $result[0]["UserID"];
-                $passwordHash = $result[0]["PasswordHash"];
+            if (!empty($loginInfo)) {
+                $userID = $loginInfo["UserID"];
+                $passwordHash = $loginInfo["PasswordHash"];
                 if (password_verify($password, $passwordHash)) {
-                    if (isset($_POST["remember-me"])) { setcookie("authToken", createToken($conn, $userID, 14), time() + (86400 * 14), "", ""); } // , TRUE, TRUE);   --removed for local testing without https
+                    if (isset($_POST["remember-me"])) { setcookie("authToken", createToken($userID, 14), time() + (86400 * 14), "", ""); } // , TRUE, TRUE);   --removed for local testing without https
                     $_SESSION["uid"] = $userID;
                     $_SESSION["username"] = $username;
 
@@ -51,7 +44,6 @@ try {
         echo json_encode(["Success" => false, "Message" => "Invalid form information / no attempt made to login"]);
     }
 } catch(PDOException $e) {
-    $conn->rollback();
     logToFile("Error: " . $e->getMessage(), "e");
 	echo json_encode(["Success" => false, "Message" => "Error logged to file"]);
 }

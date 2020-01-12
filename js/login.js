@@ -1,29 +1,60 @@
-var index = 1,
-    themes = [{"panel": "../images/assets/panel-white-mountain.jpg", "wrapper": "../images/assets/purple-mountain.jpg", "color": "blue-light"},
-              {"panel": "../images/assets/panel-orange-forest-light.jpg", "wrapper": "../images/assets/orange-forest.jpg", "color": "red"},
-              {"panel": "../images/assets/panel-orange-forest-dark.jpg", "wrapper": "../images/assets/orange-lake.jpg", "color": "orange-light"},
-              {"panel": "../images/assets/panel-green-mountain.jpg", "wrapper": "../images/assets/green-night.jpg", "color": "green"},
-              ];
+import * as Common from "./modules/common.js";
+
+const eventListeners = [
+    {
+        "eleID": "login-form",
+        "eventType": "submit",
+        "function": login
+    }, {
+        "eleID": "register-form",
+        "eventType": "submit",
+        "function": register
+    }, {
+        "dataListener": "errorCheck",
+        "eventType": "input",
+        "function": Common.errorCheck
+    }
+];
+
+const themes = [
+    {
+        "panel": "../images/assets/panel-white-mountain.jpg",
+        "wrapper": "../images/assets/purple-mountain.jpg",
+        "color": "blue-light"
+    }, {
+        "panel": "../images/assets/panel-orange-forest-light.jpg",
+        "wrapper": "../images/assets/orange-forest.jpg",
+        "color": "red"
+    }, {
+        "panel": "../images/assets/panel-orange-forest-dark.jpg",
+        "wrapper": "../images/assets/orange-lake.jpg",
+        "color": "orange-light"
+    }, {
+        "panel": "../images/assets/panel-green-mountain.jpg",
+        "wrapper": "../images/assets/green-night.jpg",
+        "color": "green"
+    }
+];
+
+var index = 1;
 
 window.onload = async function() {
     let response = await fetch("/php/login.php");
     response = await response.json();
-    if (response.Success) { console.log("Redirecting. Success: " + response.Success + ". Message: " + response.Message); window.location.href = "/main.html"; }
-    else { console.log("Not redirecting. Success: " + response.Success + ". Message: " + response.Message); }
+    if (response.Success) { return window.location.href = "/main.html"; }
 
-    document.getElementById("login-switch").addEventListener("click", function(event) {
+    document.getElementById("login-switch").addEventListener("click", event => {
         event.preventDefault();
         switchPanel("register-panel", "login-panel");
         randomizeTheme();
     });
-    document.getElementById("register-switch").addEventListener("click", function(event) {
+    document.getElementById("register-switch").addEventListener("click", event => {
         event.preventDefault();
         switchPanel("login-panel", "register-panel");
         randomizeTheme();
     });
 
-    document.getElementById("login-form").addEventListener("submit", login);
-    document.getElementById("register-form").addEventListener("submit", register);
+    Common.addListeners(eventListeners);
 };
 
 function randomizeTheme() {
@@ -32,63 +63,38 @@ function randomizeTheme() {
     while (tempIndex == index) { tempIndex = Math.floor(Math.random() * themes.length); }
     index = tempIndex;
 
-    root.style.setProperty("--theme-color", "var(--" + themes[index].color + ")");
-    root.style.setProperty("--theme-image-wrapper", "url("+ themes[index].wrapper + ")");
-    root.style.setProperty("--theme-image-panel", "url(" + themes[index].panel + ")");
-}
-
-function insertInlineMessage(position, parentNode, refNode, text, type) {
-    var tempID = (parentNode + "-" + refNode + "-" + position).replace(/#/g, ""),
-        parentNode = document.querySelector(parentNode),
-        refNode = document.querySelector(refNode),
-        prevNode = document.querySelector("#" + tempID),
-        messageNode = document.createElement("div");
-
-    messageNode.classList.add("inline-message");
-    messageNode.innerHTML = text;
-    messageNode.id = tempID;
-    if (prevNode) { prevNode.remove(); }
-
-    /* Previous node only removed when inserting at same location. Insert ID(s) into array
-       and remove later when new messages are inserted.
-    */
-    switch (type) {
-        case "success": messageNode.classList.add("bg-green");  break;
-        case "error":   messageNode.classList.add("bg-red");    break;
-        case "warning": messageNode.classList.add("bg-orange"); break;
-    }
-
-    switch (position) {
-        case "before":  return parentNode.insertBefore(messageNode, refNode);
-        case "after":   return parentNode.insertBefore(messageNode, refNode.nextSibling);
-    }
+    root.style.setProperty("--theme-color", `var(--${themes[index].color})`);
+    root.style.setProperty("--theme-image-wrapper", `url(${themes[index].wrapper})`);
+    root.style.setProperty("--theme-image-panel", `url(${themes[index].panel})`);
 }
 
 async function login(event) {
     event.preventDefault();
+    if (!Common.checkErrors([...this.elements])) { return Common.toast("Errors in form fields", "error"); }
 
     var formData = new FormData(this),
         response = await fetch("/php/login.php", {method: "POST", body: formData});
     response = await response.json();
     if (response.Success) {
-        insertInlineMessage("after", "#login-form", "#login", response.Message, "success");
-        setTimeout(function() { window.location.href = "/main.html"; }, 2000);
+        Common.insertInlineMessage("after", "#login-form", "#login", response.Message, "success");
+        setTimeout(() => window.location.href = "/main.html", 1000);
     } else {
-        insertInlineMessage("after", "#login-form", "#login", response.Message, "error");
+        Common.insertInlineMessage("after", "#login-form", "#login", response.Message, "error");
     }
 }
 
 async function register(event) {
     event.preventDefault();
+    if (!Common.checkErrors([...this.elements])) { return Common.toast("Errors in form fields", "error"); }
 
     var formData = new FormData(this),
         response = await fetch("/php/register.php", {method: "POST", body: formData});
     response = await response.json();
     if (response.Success) {
-        insertInlineMessage("after", "#register-form", "#register", response.Message, "success");
-        setTimeout(function() { window.location.href = "/main.html"; }, 2000);
+        Common.insertInlineMessage("after", "#register-form", "#register", response.Message, "success");
+        setTimeout(() => window.location.href = "/main.html", 1000);
     } else {
-        insertInlineMessage("after", "#register-form", "#register", response.Message, "error");
+        Common.insertInlineMessage("after", "#register-form", "#register", response.Message, "error");
     }
 }
 
@@ -97,7 +103,7 @@ function switchPanel(hiddenPanel, visiblePanel) {
     visiblePanel = document.getElementById(visiblePanel);
 
     visiblePanel.classList.toggle("hidden-panel");
-    setTimeout(function() {
+    setTimeout(() => {
         visiblePanel.classList.toggle("hidden");
         hiddenPanel.classList.toggle("hidden");
         hiddenPanel.classList.toggle("hidden-panel");

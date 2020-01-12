@@ -1,5 +1,5 @@
 <?php
-include("db-connect.php");
+require_once("db-functions.php");
 include_once("logging.php");
 
 try {
@@ -7,42 +7,37 @@ try {
         $userID = $_SESSION["uid"];
         $title = $_POST["title"];
         $pageURL = $_POST["pageURL"];
+        $tags = json_decode($_POST["tags"]);
 
-        if (empty($title)) {
-            echo json_encode(["Success" => false, "Message" => "Title field is required"]);
-        } else if (empty($pageURL)) {
-            echo json_encode(["Success" => false, "Message" => "URL field is required"]);
+        if (empty($title) || empty($pageURL)) {
+            echo json_encode(["Success" => false, "Message" => "Title and URL fields are required"]);
+        } else if (strlen($title) > 100) {
+            echo json_encode(["Success" => false, "Message" => "Title cannot be more than 100 characters"]);
+        } else if (strlen($pageURL) > 255) {
+            echo json_encode(["Success" => false, "Message" => "Page URL cannot be more than 255 characters"]);
+        } else if (!filter_var($pageURL, FILTER_VALIDATE_URL)) {
+            echo json_encode(["Success" => false, "Message" => "Invalid page URL"]);
         } else {
             $response = include("upload.php");
             if ($response["Success"]) {
-                $imageURL = $response["File"];
+                $imageID = $response["ImageID"];
+                $imagePath = $response["ImagePath"];
             } else {
                 echo json_encode(["Success" => false, "Message" => $response["Errors"]]);
                 exit();
             }
 
-            $dateCreated = date("Y-m-d H:i:s");
-            $dateModified = $dateCreated;
+            $date = date("Y-m-d H:i:s");
+            $bookmarkID = uploadBookmark($userID, $imageID, $title, $pageURL, $date, $date);
 
-            $query = "INSERT INTO Bookmark (Title, PageURL, ImageURL, DateCreated, DateModified, UserID)
-                        VALUES (:title, :pageURL, :imageURL, :dateCreated, :dateModified, :userID);";
-            $stmt = $conn->prepare($query);
-            $stmt->bindParam(":title", $title);
-            $stmt->bindParam(":pageURL", $pageURL);
-            $stmt->bindParam(":imageURL", $imageURL);
-            $stmt->bindParam(":dateCreated", $dateCreated);
-            $stmt->bindParam(":dateModified", $dateModified);
-            $stmt->bindParam(":userID", $userID);
-            $stmt->execute();
-            $bookmarkID = $conn->lastInsertId();
+            foreach($tags as $tag) { addTag($bookmarkID, $tag); }
 
-            echo json_encode(["Success" => true, "BookmarkInfo" => ["BookmarkID" => $bookmarkID, "Title" => $title, "PageURL" => $pageURL,  "ImageURL" => $imageURL, "DateCreated" => $dateCreated, "DateModified" => $dateModified]]);
+            echo json_encode(["Success" => true, "BookmarkInfo" => ["BookmarkID" => $bookmarkID, "Title" => $title, "PageURL" => $pageURL,  "ImagePath" => $imagePath, "DateCreated" => $date, "DateModified" => $date, "Tags" => $tags]]);
         }
     } else {
         echo json_encode(["Success" => false, "Message" => "User not signed in"]);
     }
 } catch(PDOException $e) {
-    $conn->rollback();
     logToFile("Error: " . $e->getMessage(), "e");
 	echo json_encode(["Success" => false, "Message" => "Error logged to file"]);
 }

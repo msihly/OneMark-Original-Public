@@ -66,6 +66,7 @@
 
 html, body {
     margin: 0;
+    min-height: 100vh;
 	font-family: "Roboto", Arial, Helvetica, sans-serif;
 	font-size: 18px;
 	font-weight: 600;
@@ -130,6 +131,11 @@ button:hover {
 
 .bg-prism {
     background-image: url("../images/assets/background-prism-white.png");
+    background-repeat: repeat;
+}
+
+.invisible {
+    visibility: hidden !important;
 }
 
 .hidden {
@@ -320,8 +326,8 @@ input[type="button"], input[type="submit"] {
 .file-input {
 	overflow: hidden;
 	position: absolute;
-	width: 0.1px;
-	height: 0.1px;
+	width: 1px !important;
+	height: 1px;
 	opacity: 0;
 	z-index: -1;
 }
@@ -473,6 +479,48 @@ input:not(:placeholder-shown) + label, input:focus + label {
     transform: translate(0);
 }
 
+input:placeholder-shown.invalid, input:not(:placeholder-shown).invalid, input:focus.invalid, input:focus:hover.invalid {
+    border-color: var(--red);
+}
+
+input:placeholder-shown.invalid + label, input:not(:placeholder-shown).invalid + label, input:focus.invalid + label {
+    color: var(--red);
+}
+
+input:placeholder-shown.invalid + label:hover {
+    color: rgb(130, 10, 10);
+}
+
+.form-group {
+    display: flex;
+    flex-flow: column-reverse;
+    margin: 0.25rem 0;
+}
+
+.form-group.no-rev {
+    flex-flow: column;
+}
+
+.form-group.no-mgn {
+    margin: 0;
+}
+
+.row {
+    display: flex;
+    flex-flow: row;
+}
+
+.column {
+    display: flex;
+    flex-flow: column;
+}
+
+.error-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--red);
+}
+
 ::-webkit-input-placeholder {
     transition: inherit;
     opacity: 0;
@@ -534,12 +582,6 @@ input:not(:placeholder-shown) + label, input:focus + label {
     color: var(--theme-color);
 }
 
-.form-group {
-    display: flex;
-    flex-flow: column-reverse;
-    margin: 0.5rem 0;
-}
-
 /********************* MODAL *********************/
 .modal-container {
 	position: fixed;
@@ -561,6 +603,7 @@ input:not(:placeholder-shown) + label, input:focus + label {
     width: fit-content;
     height: fit-content;
     max-width: 800px;
+    max-height: 98vh;
     margin: 1em auto;
     background-color: #fff;
     border: 3px solid;
@@ -604,11 +647,11 @@ input:not(:placeholder-shown) + label, input:focus + label {
 	right: 0;
     top: 0;
     margin: 2px 2px 0 0;
-    padding: 1px 10px;
-    border-radius: 2px;
+    padding: 0.5rem;
+    border-radius: 50%;
     font-size: 24px;
     font-weight: 400;
-    line-height: 1;
+    line-height: 0.5;
     color: #555;
 	cursor: pointer;
 	transition: all 0.2s;
@@ -630,6 +673,7 @@ input:not(:placeholder-shown) + label, input:focus + label {
     color: #fff;
 }
 
+/********************* UPLOAD / EDIT *********************/
 .preview-output {
     width: 640px;
     max-width: 100%;
@@ -637,6 +681,113 @@ input:not(:placeholder-shown) + label, input:focus + label {
 	margin: 0 auto 1rem auto;
 	border: 1px solid #2F2F2F;
 	background: #171717;
+}
+
+.bk-left {
+    width: 70%;
+    margin-right: 0.25rem;
+}
+
+.bk-right {
+    width: 30%;
+    margin-left: 0.25rem;
+}
+
+.tag-group {
+    margin: 0;
+}
+
+.tag-search-label {
+    padding-left: 0.25rem;
+}
+
+.tag-search, .tag-search-btn, .tags {
+    border: 2px solid #444 !important;
+}
+
+.tag-search {
+    margin: 0 !important;
+}
+
+.tags {
+    height: 50%;
+    max-height: 85px;
+    border-top: 0 !important;
+    overflow-x: hidden;
+}
+
+.tags::-webkit-scrollbar {
+	width: 6px;
+}
+
+.tag {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem;
+    font-weight: 500;
+    color: #666;
+}
+
+.tag:hover {
+    background-color: #eee;
+    color: #333;
+}
+
+.tag-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tag-x {
+    align-self: center;
+    font-size: 24px;
+    line-height: 0.5;
+    color: #555;
+    cursor: pointer;
+}
+
+.tag-x:hover {
+    color: rgb(160, 15, 15);
+}
+
+.tag-search-btn {
+    align-self: flex-end;
+    padding: 2px 10px;
+    border-left: 0 !important;
+    font-size: 24px;
+    color: #555;
+    cursor: pointer;
+    transition: 0.1s all ease-in-out;
+}
+
+.tag-search-btn::before {
+    content: "•";
+    display: inline-block;
+    transition: 0.2s transform ease-in-out;
+}
+
+.tag-search-btn:hover {
+    background-color: #444;
+    color: #fff;
+}
+
+.tag-search-btn.add::before {
+    content: "×";
+    transform: rotate(45deg);
+}
+
+.tag-search-btn.add:hover {
+    background-color: var(--blue-light);
+}
+
+.tag-search-btn.del::before {
+    content: "×";
+    transform: rotate(0deg);
+}
+
+.tag-search-btn.del:hover {
+    background-color: var(--red);
 }
 
 /********************* BOOKMARK GRID *********************/
@@ -695,13 +846,13 @@ input:not(:placeholder-shown) + label, input:focus + label {
 }
 
 .image:hover {
-	animation: movePosition 5s ease-in-out 2 alternate both;
+	animation: movePosition 3s ease-in-out 2 alternate both;
 }
 
 @keyframes movePosition {
 	0%		{object-position: center;}
-	25%		{object-position: top;}
-	100%	{object-position: bottom;}
+	25%		{object-position: left top;}
+	100%	{object-position: right bottom;}
 }
 
 .title {
@@ -714,7 +865,8 @@ input:not(:placeholder-shown) + label, input:focus + label {
 	background: rgba(0, 0, 0, 0.6);
 	color: #E8E8E8;
 	text-align: center;
-	text-overflow: ellipsis;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .menu {
@@ -722,7 +874,7 @@ input:not(:placeholder-shown) + label, input:focus + label {
     flex-direction: column-reverse;
 }
 
-.menu-circle {
+.menu-toggle {
     display: inline-block;
     position: absolute;
     top: 0;
@@ -730,19 +882,20 @@ input:not(:placeholder-shown) + label, input:focus + label {
     width: 35px;
     height: 35px;
     margin: 2px 2px 0 0;
-    border-radius: 25px;
+    border-radius: 50%;
     z-index: 3;
 }
 
-.menu-circle:hover {
-    background-image: radial-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.0));
+.menu-toggle:hover {
+    background-image: radial-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.1));
 }
 
-.menu-content:not(.hidden) + .menu-circle {
-    background-image: radial-gradient(rgba(200, 200, 200, 0.25), rgba(0, 0, 0, 0.0));
+.menu-content:not(.hidden) + .menu-toggle {
+    background-image: radial-gradient(rgba(200, 200, 200, 0.4), rgba(200, 200, 200, 0.1));
 }
 
-.menu-toggle {
+.menu-toggle::before {
+    content: "";
     position: absolute;
     display: inline-block;
 	right: 0;
@@ -758,11 +911,11 @@ input:not(:placeholder-shown) + label, input:focus + label {
     transition: .2s all, 0s border;
 }
 
-.menu-circle:hover > .menu-toggle, .menu-toggle:hover {
+.menu-toggle:hover::before {
 	border-color: #fff;
 }
 
-.menu-content:not(.hidden) + .menu-circle > .menu-toggle {
+.menu-content:not(.hidden) + .menu-toggle::before {
     border-color: rgba(0, 0, 0, 0.65);
     box-shadow: 2px 2px 3px 0px rgba(200, 200, 200, 0.1);
 }
