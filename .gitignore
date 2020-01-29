@@ -3,3 +3,4 @@ sql/
 vendor/
 *.log
 *.ai
+*.db
