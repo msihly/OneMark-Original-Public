@@ -1,5 +1,5 @@
 <?php
-require_once("../logging.php");
+require_once("logging.php");
 /*
 logToFile("Default log test");
 logToFile("Error log test", "e");

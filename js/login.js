@@ -18,31 +18,27 @@ const eventListeners = [
 
 const themes = [
     {
-        "panel": "../images/assets/panel-white-mountain.jpg",
-        "wrapper": "../images/assets/purple-mountain.jpg",
+        "panel": "../images/panel-white-mountain.jpg",
+        "wrapper": "../images/purple-mountain.jpg",
         "color": "blue-light"
     }, {
-        "panel": "../images/assets/panel-orange-forest-light.jpg",
-        "wrapper": "../images/assets/orange-forest.jpg",
+        "panel": "../images/panel-orange-forest-light.jpg",
+        "wrapper": "../images/orange-forest.jpg",
         "color": "red"
     }, {
-        "panel": "../images/assets/panel-orange-forest-dark.jpg",
-        "wrapper": "../images/assets/orange-lake.jpg",
+        "panel": "../images/panel-orange-forest-dark.jpg",
+        "wrapper": "../images/orange-lake.jpg",
         "color": "orange-light"
     }, {
-        "panel": "../images/assets/panel-green-mountain.jpg",
-        "wrapper": "../images/assets/green-night.jpg",
+        "panel": "../images/panel-green-mountain.jpg",
+        "wrapper": "../images/green-night.jpg",
         "color": "green"
     }
 ];
 
-var index = 1;
+var index = 0;
 
-window.onload = async function() {
-    let response = await fetch("/php/login.php");
-    response = await response.json();
-    if (response.Success) { return window.location.href = "/main.html"; }
-
+window.addEventListener("DOMContentLoaded", async function() {
     document.getElementById("login-switch").addEventListener("click", event => {
         event.preventDefault();
         switchPanel("register-panel", "login-panel");
@@ -55,11 +51,11 @@ window.onload = async function() {
     });
 
     Common.addListeners(eventListeners);
-};
+});
 
 function randomizeTheme() {
-    var tempIndex = index,
-        root = document.documentElement;
+    var root = document.documentElement,
+        tempIndex = index;
     while (tempIndex == index) { tempIndex = Math.floor(Math.random() * themes.length); }
     index = tempIndex;
 
@@ -77,7 +73,7 @@ async function login(event) {
     response = await response.json();
     if (response.Success) {
         Common.insertInlineMessage("after", "#login-form", "#login", response.Message, "success");
-        setTimeout(() => window.location.href = "/main.html", 1000);
+        setTimeout(() => window.location.href = "/main.php", 1000);
     } else {
         Common.insertInlineMessage("after", "#login-form", "#login", response.Message, "error");
     }
@@ -92,7 +88,7 @@ async function register(event) {
     response = await response.json();
     if (response.Success) {
         Common.insertInlineMessage("after", "#register-form", "#register", response.Message, "success");
-        setTimeout(() => window.location.href = "/main.html", 1000);
+        setTimeout(() => window.location.href = "/main.php", 1000);
     } else {
         Common.insertInlineMessage("after", "#register-form", "#register", response.Message, "error");
     }

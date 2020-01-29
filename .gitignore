@@ -1,4 +1,9 @@
 
+"unused & misc/"
+unused\ &\ misc/
+testing/
+images/components/
+images/unused/
 sql/
 vendor/
 *.log

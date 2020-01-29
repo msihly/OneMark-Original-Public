@@ -1,12 +1,18 @@
+<?php
+    session_start();
+    if (isset($_SESSION["uid"])) {
+        header("Location: /main.php");
+        exit;
+    }
+?>
 <!DOCTYPE html>
 <html lang="en">
 	<head>
 		<title>Login - OneMark</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel="icon" type="image/ico" href="images/assets/favicon.ico">
+		<link rel="icon" type="image/ico" href="images/favicon.ico">
         <link rel="stylesheet" href="css/stylesheet.css">
-        <script src="js/modules/page-load.js" defer></script>
 		<script src="js/login.js" type="module"></script>
 	</head>
 	<body>
@@ -32,7 +38,7 @@
                             <span class="checkbox"></span>
                             <label for="login-remember" class="checkbox-title">Keep me logged in</label>
                         </label>
-                        <button type="submit" class="button-hollow" id="login" name="login">LOG IN</button>
+                        <button type="submit" class="btn-hollow" id="login" name="login">LOG IN</button>
                     </form>
                 </div>
                 <div class="lg-panel-form pad-ctn-3 hidden-panel hidden" id="register-panel">
@@ -64,7 +70,7 @@
                             <span class="checkbox"></span>
                             <label for="register-remember" class="checkbox-title">Keep me logged in</label>
                         </label>
-                        <button type="submit" class="button-hollow" id="register" name="register">REGISTER</button>
+                        <button type="submit" class="btn-hollow" id="register" name="register">REGISTER</button>
                     </form>
                 </div>
             </div>

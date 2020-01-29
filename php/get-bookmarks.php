@@ -1,21 +1,15 @@
 <?php
-require_once("db-functions.php");
-include_once("logging.php");
+require_once("restricted/db-functions.php");
+include_once("restricted/logging.php");
 
 try {
     if (isset($_SESSION["uid"])) {
         $userID = $_SESSION["uid"];
         $bookmarks = getAllBookmarks($userID);
-        if (!empty($bookmarks)) {
-            foreach ($bookmarks as $idx => $bk) {
-                $tags = getAllBookmarkTags($bk["BookmarkID"]);
-                $bookmarks[$idx]["Tags"] = empty($tags) ? [] : $tags;
-            }
-        }
-
         echo json_encode(["Success" => true, "Bookmarks" => $bookmarks]);
     } else {
-        echo json_encode(["Success" => false, "Message" => "Error: Access denied. No active user found."]);
+        header("Location: ../index.php");
+        exit;
     }
 } catch(PDOException $e) {
     logToFile("Error: " . $e->getMessage(), "e");

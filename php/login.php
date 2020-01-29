@@ -1,6 +1,6 @@
 <?php
-require_once("db-functions.php");
-include_once("logging.php");
+require_once("restricted/db-functions.php");
+include_once("restricted/logging.php");
 
 //delete token and cookie on logout and password change
 

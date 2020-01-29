@@ -2,43 +2,51 @@ import * as Common from "./modules/common.js";
 
 const eventListeners = [
     {
-        "eleID": "upload-form",
-        "eventType": "submit",
-        "function": uploadBookmark
-    }, {
-        "eleID": "edit-form",
-        "eventType": "submit",
-        "function": editBookmark
-    }, {
-        "eleID": "open-upload-modal",
+        "id": "create-bookmark",
         "eventType": "click",
-        "function": modalUpload
+        "function": (event) => {modalBookmark(event, "upload");}
     }, {
-        "eleID": "sidemenu",
+        "id": "sidemenu",
         "eventType": "click",
         "function": toggleMenu
     }, {
-        "eleID": "logout",
+        "id": "sortmenu",
+        "eventType": "click",
+        "function": toggleMenu
+    }, {
+        "id": "logout",
         "eventType": "click",
         "function": logout
     }, {
-        "eleID": "searchbar",
+        "id": "searchbar",
         "eventType": "input",
         "function": searchBookmarks,
         "debounce": 100
     }, {
-        "dataListener": "tag-search",
+        "id": "tag-search",
         "eventType": "input",
         "function": searchTags,
         "debounce": 50
     }, {
-        "dataListener": "tag-btn",
+        "id": "tag-btn",
         "eventType": "click",
         "function": updateTag
     }, {
-        "dataListener": "preview",
+        "id": "preview",
         "eventType": "click",
-        "function": openBookmark
+        "function": (event) => {openBookmark(event, true);}
+    }, {
+        "id": "image-upload",
+        "eventType": "change",
+        "function": fileUpload
+    }, {
+        "id": "remove-upload",
+        "eventType": "click",
+        "function": removeUpload
+    }, {
+        "class": "sortmenu-btn",
+        "eventType": "click",
+        "function": sortBookmarks
     }, {
         "dataListener": "modalClose",
         "eventType": "mousedown",
@@ -52,26 +60,37 @@ const eventListeners = [
         "eventType": "input",
         "function": Common.errorCheck
     }, {
-        "dataListener": "fileUpload",
-        "eventType": "change",
-        "function": fileUpload
-    }, {
         "domObject": document,
         "eventType": "click",
         "function": closeMenus
     }
 ];
 
-var container,
-    [bookmarks, activeBookmarks, filteredBookmarks, tmpTags, openMenus] = [[], [], [], [], []];
+var Globals = {
+    container: "",
+    sort: "",
+    bookmarks: [],
+    activeBookmarks: [],
+    tags: [],
+    openMenus: []
+}
+var LazyObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+        if (e.isIntersecting) {
+            e.target.src = e.target.dataset.src;
+            e.target.classList.remove("lazy");
+            LazyObserver.unobserve(e.target);
+        }
+    });
+});
 
-window.onload = async function() {
-    bookmarks = await getBookmarks();
-    activeBookmarks = [...bookmarks];
+window.addEventListener("DOMContentLoaded", async function() {
+    Globals.bookmarks = await getBookmarks();
+    Globals.activeBookmarks = [...Globals.bookmarks];
     Common.addListeners(eventListeners);
-	container = document.getElementById("bookmark-container");
-    if (!bookmarksEmpty(activeBookmarks)) { createBookmarks(container, activeBookmarks); }
-};
+    Globals.container = document.getElementById("bookmark-container");
+    if (!bookmarksEmpty(Globals.activeBookmarks)) { createBookmarks(Globals.container, Globals.activeBookmarks); }
+});
 
 /******************************* GENERAL *******************************/
 function regexEscape(string) {
@@ -79,10 +98,10 @@ function regexEscape(string) {
 }
 
 function closeMenus() {
-    if (openMenus.length > 0) {
-        openMenus.forEach(e => {
+    if (Globals.openMenus.length > 0) {
+        Globals.openMenus.forEach(e => {
             e.classList.toggle("hidden");
-            openMenus.shift();
+            Globals.openMenus.shift();
         });
     }
 }
@@ -90,10 +109,10 @@ function closeMenus() {
 function toggleMenu() {
     event.stopPropagation();
     var menu = document.getElementById(this.dataset.menu);
-    if (!openMenus.includes(menu)) {
+    if (!Globals.openMenus.includes(menu)) {
         closeMenus();
         menu.classList.toggle("hidden");
-        openMenus.push(menu);
+        Globals.openMenus.push(menu);
     } else { closeMenus(); }
 }
 
@@ -104,47 +123,60 @@ async function logout(event) {
     response = await response.json();
     if (response.Success) {
         Common.toast(response.Message, "success");
-        setTimeout(function() { window.location.href = "/index.html"; }, 1000);
+        setTimeout(function() { window.location.href = "/index.php"; }, 1000);
     } else {
         Common.toast(response.Message, "error");
     }
 }
 
 /******************************* MODAL *******************************/
-function modalEditor() {
-	event.stopPropagation();
-    var [editor, previewURL, previewTitle, previewImage, form, formURL, formTitle, tagSearch, tagBtn, tagsCtn] =
-            document.querySelectorAll("#edit-bookmark, #edit-preview, #edit-preview-title, #edit-preview-image, #edit-form, #edit-form-url, #edit-form-title, #edit-tag-search, #edit-tag-btn, #edit-tags"),
-		bkInfo = bookmarks[bookmarks.findIndex(({BookmarkID}) => BookmarkID == this.dataset.parent.substring(1))];
-
-	previewURL.dataset.href = bkInfo.PageURL;
-	previewTitle.innerHTML = bkInfo.Title;
-	previewImage.src = bkInfo.ImagePath;
-	form.dataset.target = this.dataset.parent;
-	formURL.value = bkInfo.PageURL;
-    formTitle.value = bkInfo.Title;
-
-    tagSearch.value = "";
-    tagBtn.classList.remove("add", "del");
-    tmpTags = [...bkInfo.Tags];
-    while (tagsCtn.firstChild) { tagsCtn.removeChild(tagsCtn.firstChild); }
-    createTags(tmpTags, tagsCtn);
-
-    Common.errorCheck.call(formURL);
-    Common.errorCheck.call(formTitle);
-
-    closeMenus();
-	editor.classList.remove("hidden");
-}
-
-function modalUpload(event) {
+function modalBookmark(event, formType) {
     event.preventDefault();
-    var tagsCtn = document.getElementById("upload-tags");
-    while (tagsCtn.firstChild) { tagsCtn.removeChild(tagsCtn.firstChild); }
-    tmpTags = [];
+	event.stopPropagation();
+    var [modal, previewURL, previewTitle, previewImage, form, formURL, formTitle, tagSearch, tagBtn, tagsCtn] =
+            document.querySelectorAll("#bk-modal, #preview, #preview-title, #preview-image, #bk-f, #bk-f-url, #bk-f-title, #tag-search, #tag-btn, #tags");
+
+    if (formType == "upload") {
+        previewURL.dataset.href = "";
+        previewTitle.innerHTML = "No Title";
+        previewImage.src = "images/No-Image.jpg";
+
+        formURL.value = "";
+        formTitle.value = "";
+
+        tagSearch.value = "";
+        tagBtn.classList.remove("add", "del");
+        Globals.tags = [];
+        while (tagsCtn.firstChild) { tagsCtn.removeChild(tagsCtn.firstChild); }
+
+        form.removeEventListener("submit", editBookmark);
+        form.addEventListener("submit", uploadBookmark);
+    } else if (formType == "edit") {
+        var	bkInfo = Globals.bookmarks[Globals.bookmarks.findIndex(({BookmarkID}) => BookmarkID == event.target.dataset.parent.substring(1))];
+        form.dataset.bkTarget = event.target.dataset.parent;
+
+        previewURL.dataset.href = bkInfo.PageURL;
+        previewTitle.innerHTML = bkInfo.Title;
+        previewImage.src = bkInfo.ImagePath;
+
+        formURL.value = bkInfo.PageURL;
+        formTitle.value = bkInfo.Title;
+
+        tagSearch.value = "";
+        tagBtn.classList.remove("add", "del");
+        Globals.tags = [...bkInfo.Tags];
+        while (tagsCtn.firstChild) { tagsCtn.removeChild(tagsCtn.firstChild); }
+        createTags(Globals.tags, tagsCtn);
+
+        Common.errorCheck.call(formURL);
+        Common.errorCheck.call(formTitle);
+
+        form.removeEventListener("submit", uploadBookmark);
+        form.addEventListener("submit", editBookmark);
+    }
 
     closeMenus();
-    document.getElementById(this.dataset.modal).classList.remove("hidden");
+	modal.classList.remove("hidden");
 }
 
 function modalClose(event) {
@@ -164,7 +196,7 @@ function createTag(tagText, tagsCtn) {
 
     var tagX = document.getElementById(`tagx-${tagText}`);
     tagX.addEventListener("click", function() {
-        let tagBtn = document.getElementById(`${this.dataset.form}-tag-btn`);
+        let tagBtn = document.getElementById("tag-btn");
         tagBtn.classList.remove("del");
         tagBtn.classList.add("add");
         removeTag(tagText);
@@ -179,7 +211,7 @@ function createTags(arr, tagsCtn) {
 function removeTag(tagText) {
     var tag = document.getElementById(`tag-${tagText}`);
     tag.remove();
-    tmpTags = tmpTags.filter(e => e !== tagText);
+    Globals.tags = Globals.tags.filter(e => e !== tagText);
 }
 
 function hideTags(arr) {
@@ -191,13 +223,13 @@ function showTags(arr) {
 }
 
 function searchTags() {
-    var tagBtn = document.getElementById(`${this.dataset.form}-tag-btn`);
+    var tagBtn = document.getElementById("tag-btn");
     if (this.value.length > 0) {
         var reTag = new RegExp(regexEscape(this.value), "i"),
-            tagsActive = tmpTags.filter(e => { return reTag.test(e); });
-        hideTags(tmpTags);
+            tagsActive = Globals.tags.filter(e => { return reTag.test(e); });
+        hideTags(Globals.tags);
         showTags(tagsActive);
-        if (tmpTags.includes(this.value)) {
+        if (Globals.tags.includes(this.value)) {
             tagBtn.classList.remove("add");
             tagBtn.classList.add("del");
         } else {
@@ -205,16 +237,16 @@ function searchTags() {
             tagBtn.classList.add("add");
         }
     } else {
-        showTags(tmpTags);
+        showTags(Globals.tags);
         tagBtn.classList.remove("del", "add");
     }
 }
 
 function updateTag() {
-    var tagText = document.getElementById(`${this.dataset.form}-tag-search`).value,
-        tagsCtn = document.getElementById(`${this.dataset.form}-tags`);
+    var tagText = document.getElementById("tag-search").value,
+        tagsCtn = document.getElementById("tags");
     if (this.classList.contains("add")) {
-        tmpTags.push(tagText);
+        Globals.tags.push(tagText);
         createTag(tagText, tagsCtn);
         this.classList.remove("add");
         this.classList.add("del");
@@ -234,9 +266,10 @@ function inputPreview() {
 
 function fileUpload() {
 	var fileName = this.value.split("\\").pop(),
-		label = document.getElementById(this.dataset.label),
-		imagePreview = document.getElementById(this.dataset.preview);
+		label = document.getElementById("bk-image-name"),
+        imagePreview = document.getElementById("preview-image");
 
+    document.getElementById("bk-f-remove").value = "false";
 	label.classList.toggle("hidden", !fileName);
 	label.innerHTML = fileName;
 
@@ -245,15 +278,24 @@ function fileUpload() {
 		reader.onload = function(e) {imagePreview.src = e.target.result;}
 		reader.readAsDataURL(this.files[0]);
 	} else {
-		imagePreview.src = "/images/assets/No-Image.jpg";
-	}
+		imagePreview.src = "/images/No-Image.jpg";
+    }
+}
+
+function removeUpload() {
+    var label = document.getElementById("bk-image-name");
+    document.getElementById("image-upload").value = "";
+    document.getElementById("bk-f-remove").value = "true";
+    document.getElementById("preview-image").src = "/images/No-Image.jpg";
+    label.innerHTML = "";
+    label.classList.add("hidden");
 }
 
 /******************************* BOOKMARKS *******************************/
 function createBookmark(bkInfo) {
     var html = `<div class="bookmark" id="b${bkInfo.BookmarkID}" data-href="${bkInfo.PageURL}">
                     <div class="title" id="t${bkInfo.BookmarkID}">${bkInfo.Title}</div>
-                    <img class="image" id="i${bkInfo.BookmarkID}" src="${bkInfo.ImagePath}">
+                    <img class="image lazy" id="i${bkInfo.BookmarkID}" src="/images/Lazy-Load.jpg" data-src="${bkInfo.ImagePath}">
                     <div class="menu">
                         <div class="menu-content hidden" id="m${bkInfo.BookmarkID}">
                             <div id="mc-t${bkInfo.BookmarkID}" data-parent="b${bkInfo.BookmarkID}">Edit</div>
@@ -265,8 +307,9 @@ function createBookmark(bkInfo) {
     var frag = document.createRange().createContextualFragment(html);
     frag.querySelector(`#b${bkInfo.BookmarkID}`).addEventListener("click", openBookmark);
     frag.querySelector(`#m-t${bkInfo.BookmarkID}`).addEventListener("click", toggleMenu);
-    frag.querySelector(`#mc-t${bkInfo.BookmarkID}`).addEventListener("click", modalEditor);
+    frag.querySelector(`#mc-t${bkInfo.BookmarkID}`).addEventListener("click", function(event) {modalBookmark(event, "edit");});
     frag.querySelector(`#mc-d${bkInfo.BookmarkID}`).addEventListener("click", deleteBookmark);
+    LazyObserver.observe(frag.querySelector(`#i${bkInfo.BookmarkID}`));
 
 	return frag;
 }
@@ -277,15 +320,23 @@ function createBookmarks(ctnr, arr) {
     ctnr.appendChild(docFrag);
 }
 
-function openBookmark() {
+function openBookmark(event, preview = false) {
     var href = this.dataset.href;
     if (href && href != "#") { window.open(href); }
+    if (!preview) {
+        var bookmarkID = this.id.substring(1),
+            formData = new FormData();
+        formData.append("bookmarkID", bookmarkID);
+        fetch("/php/add-view.php", {method: "POST", body: formData});
+        let bk = Globals.bookmarks[Globals.bookmarks.findIndex(({BookmarkID}) => BookmarkID == bookmarkID)];
+        bk.Views = parseInt(bk.Views) + 1;
+    }
 }
 
 async function getBookmarks() {
     let response = await fetch("/php/get-bookmarks.php");
     response = await response.json();
-    if (!response.Success) { return window.location.href = "/index.html"; }
+    if (!response.Success) { Common.toast("Error getting bookmarks", "error"); }
     return response.Bookmarks;
 }
 
@@ -295,17 +346,17 @@ async function uploadBookmark(event) {
 
     var formData = new FormData(this);
 
-    if (bookmarks.some(e => e.PageURL == formData.get("pageURL"))) {
+    if (Globals.bookmarks.some(e => e.PageURL == formData.get("pageURL"))) {
 		Common.toast("Bookmark already exists with this URL", "error");
 	} else {
-        formData.append("tags", JSON.stringify(tmpTags));
+        formData.append("tags", JSON.stringify(Globals.tags));
         var response = await fetch("/php/add-bookmark.php", {method: "POST", body: formData});
         response = await response.json();
         if (response.Success) {
-            if (activeBookmarks.length < 1) { container.classList.remove("empty"); }
-            activeBookmarks.push(response.BookmarkInfo);
-            bookmarks.push(response.BookmarkInfo);
-            container.appendChild(createBookmark(response.BookmarkInfo));
+            if (Globals.activeBookmarks.length < 1) { Globals.container.classList.remove("empty"); }
+            Globals.activeBookmarks.push(response.BookmarkInfo);
+            Globals.bookmarks.push(response.BookmarkInfo);
+            Globals.container.appendChild(createBookmark(response.BookmarkInfo));
             Common.toast("Bookmark created", "success");
         } else {
             Common.toast(response.Message, "error");
@@ -318,19 +369,17 @@ async function editBookmark(event) {
     if (!Common.checkErrors([...this.elements])) { return Common.toast("Errors in form fields", "error"); }
 
 	var formData = new FormData(this),
-		bookmark = document.getElementById(this.dataset.target),
-        bookmarkID = bookmark.id.substring(1);
+        bookmarkID = (this.dataset.bkTarget).substring(1);
 
-	if (bookmarks.some(e => e.PageURL == formData.get("pageURL") && e.BookmarkID != bookmarkID)) {
+	if (Globals.bookmarks.some(e => e.PageURL == formData.get("pageURL") && e.BookmarkID != bookmarkID)) {
 		Common.toast("Bookmark already exists with this URL", "error");
 	} else {
-        //cursorLoad(true, "wait");
         formData.append("bookmarkID", bookmarkID);
-        formData.append("tags", JSON.stringify(tmpTags));
+        formData.append("tags", JSON.stringify(Globals.tags));
         var response = await fetch("/php/edit-bookmark.php", {method: "POST", body: formData});
         response = await response.json();
         if (response.Success) {
-            bookmarks[bookmarks.findIndex(({BookmarkID}) => BookmarkID == bookmarkID)] = response.BookmarkInfo;
+            Globals.bookmarks[Globals.bookmarks.findIndex(({BookmarkID}) => BookmarkID == bookmarkID)] = response.BookmarkInfo;
             document.getElementById(`b${response.BookmarkInfo.BookmarkID}`).dataset.href = response.BookmarkInfo.PageURL;
             document.getElementById(`i${response.BookmarkInfo.BookmarkID}`).src = response.BookmarkInfo.ImagePath;
             document.getElementById(`t${response.BookmarkInfo.BookmarkID}`).innerHTML = response.BookmarkInfo.Title;
@@ -339,7 +388,6 @@ async function editBookmark(event) {
         } else {
             Common.toast(response.Message, "error")
         }
-        //cursorLoad(false);
     }
 }
 
@@ -357,10 +405,10 @@ function spliceBookmark(arr, bookmarkID) {
 
 function bookmarksEmpty(arr) {
     if (arr.length < 1) {
-        container.classList.add("empty");
+        Globals.container.classList.add("empty");
         return true;
     } else {
-        container.classList.remove("empty");
+        Globals.container.classList.remove("empty");
         return false;
     }
 }
@@ -377,9 +425,9 @@ async function deleteBookmark(event) {
     response = await response.json();
     if (response.Success) {
         bookmark.remove();
-        spliceBookmark(bookmarks, bookmarkID);
-        spliceBookmark(activeBookmarks, bookmarkID);
-        bookmarksEmpty(activeBookmarks);
+        spliceBookmark(Globals.bookmarks, bookmarkID);
+        spliceBookmark(Globals.activeBookmarks, bookmarkID);
+        bookmarksEmpty(Globals.activeBookmarks);
         Common.toast("Bookmark deleted", "success");
     } else {
         Common.toast(response.Message, "error");
@@ -396,8 +444,6 @@ function showBookmarks(arr) {
 }
 
 function searchBookmarks() {
-    //ADD [type]: folder
-    //ADD "-" to remove from results
     if (this.value.length > 0) {
         var terms = regexEscape(this.value.trim()).split(" "),
             titles = terms.filter(term => term.match(/(?<=(title|caption|label):)[^\s]*/gi)) || [],
@@ -417,17 +463,34 @@ function searchBookmarks() {
             reTag = new RegExp(!this.dataset.fullWord ? tags : `^${tags}$`, "i"),
             reUnstrict = new RegExp(!this.dataset.fullWord ? unstrict : `^${unstrict}$`, "i");
 
-        filteredBookmarks = bookmarks.filter(bk => {
+        filteredBookmarks = Globals.bookmarks.filter(bk => {
             return reTitle.test(bk["Title"]) || reURL.test(bk["PageURL"]) || reTag.test(bk["Tags"]) ||
                 reUnstrict.test(bk["Title"]) || reUnstrict.test(bk["PageURL"]) || reUnstrict.test(bk["Tags"]);
         });
 
-        hideBookmarks(activeBookmarks);
+        hideBookmarks(Globals.activeBookmarks);
         showBookmarks(filteredBookmarks);
         bookmarksEmpty(filteredBookmarks);
     } else {
         bookmarksEmpty(filteredBookmarks);
         hideBookmarks(filteredBookmarks);
-        showBookmarks(activeBookmarks);
+        showBookmarks(Globals.activeBookmarks);
     }
+}
+
+function sortBookmarks() {
+    let sorted = [...Globals.bookmarks];
+    switch (this.id) {
+        case Globals.sort: return;
+        case "title-asc": sorted.sort((a,b) => a.Title.localeCompare(b.Title)); break;
+        case "title-desc": sorted.sort((a,b) => b.Title.localeCompare(a.Title)); break;
+        case "views-asc": sorted.sort((a,b) => a.Views.localeCompare(b.Views)); break;
+        case "views-desc": sorted.sort((a,b) => b.Views.localeCompare(a.Views)); break;
+        case "created-asc": sorted.sort((a,b) => a.DateCreated.localeCompare(b.DateCreated)); break;
+        case "created-desc": sorted.sort((a,b) => b.DateCreated.localeCompare(a.DateCreated)); break;
+        case "modified-asc": sorted.sort((a,b) => a.DateModified.localeCompare(b.DateModified)); break;
+        case "modified-desc": sorted.sort((a,b) => b.DateModified.localeCompare(a.DateModified)); break;
+    }
+    sorted.forEach((e, i) => document.getElementById(`b${e.BookmarkID}`).style.order = (i + 1) * 20);
+    Globals.sort = this.id;
 }

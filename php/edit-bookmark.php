@@ -1,6 +1,6 @@
 <?php
-require_once("db-functions.php");
-include_once("logging.php");
+require_once("restricted/db-functions.php");
+include_once("restricted/logging.php");
 
 try {
     if (isset($_SESSION["uid"])) {
@@ -33,7 +33,12 @@ try {
                     exit();
                 }
             } else {
-                $imagePath = $curImagePath;
+                if ($_POST["removeImage"] == "true") {
+                    $imageID = 2;
+                    $imagePath = "../images/No-Image.jpg";
+                } else {
+                    $imagePath = $curImagePath;
+                }
             }
 
             if ($title == $curTitle && $pageURL == $curPageURL && $imagePath == $curImagePath && empty(array_diff($tags, $curTags)) && empty(array_diff($curTags, $tags))) {
@@ -41,7 +46,7 @@ try {
             } else {
                 $dateModified = editBookmark($bookmarkID, $userID, $title, $pageURL, $imageID, $tags);
 
-                echo json_encode(["Success" => true, "BookmarkInfo" => ["BookmarkID" => $bookmarkID, "Title" => $title, "PageURL" => $pageURL,  "ImagePath" => $imagePath, "DateCreated" => $dateCreated, "DateModified" => $dateModified, "Tags" => $tags]]);
+                echo json_encode(["Success" => true, "BookmarkInfo" => ["BookmarkID" => $bookmarkID, "Title" => $title, "PageURL" => $pageURL,  "ImagePath" => $imagePath, "DateCreated" => $dateCreated, "DateModified" => $dateModified, "Views" => $_POST["views"], "Tags" => $tags]]);
             }
         }
     } else {

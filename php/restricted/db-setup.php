@@ -1,6 +1,6 @@
 <?php
 require_once("db-connect.php");
-include_once("../logging.php");
+include_once("logging.php");
 
 try {
     $conn->beginTransaction();

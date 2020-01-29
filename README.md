@@ -14,6 +14,46 @@
 ---
 # Changelog
 *The version histories below do not account for all changes made as documentation is written from the To-Do-List in the following major section and from memory prior to each commit. Additionally, minor changes are typically not recorded in the changelog or in the To-Do-List. Analysis of the differences on GitHub can be used to identify undocumented changes when necessary.*
+## Version 0.68 &nbsp;-&nbsp; (2020-01-29)
+* Merged upload- and edit-bookmark modals into one dynamic modal
+    * Removed several extraneous element attributes related to differentiating between elements on edit and upload modals
+    * Modified functions, event listeners, and global variables associated with previous configuration to now directly reference the unique elements on the bookmark-modal instead of dynamically creating IDs
+* Fixed `IntersectionObserver` implementation, which only observed images created at window load and not newly created bookmarks
+    * Observer is now created as a global variable and bookmark images are observed upon creation in `createBookmark()` instead of all at once on window load
+* Consolidated global variables (excluding `lazyObserver`) into single global object `Globals`
+* Rewrote `addListeners()` function in `Common.js` to simplify structure, consolidate repeated code, and add support for classes as identifiers
+* Updated `Common.js` to use string literals
+* Added bookmark sorting functionality
+    * Sort options include Title, Views, Date Created, and Date Modified with an ascending and descending option for each
+    * Added `Views` column (default = 0) to `Bookmarks` db-table to support new sort type
+    * Added `add-view.php` file for asynchronus incrementation of bookmark view count
+    * Updated navbar HTML structure and CSS styling to support new 'Sort' menu
+* Moved `db-functions.php` and `logging.php` to restricted folders as they should not be directly accessible by users
+
+## Version 0.67 &nbsp;-&nbsp; (2020-01-24)
+* Added *'Remove Image'* button to edit- and upload-bookmark modals
+* Added lazy-loading of bookmark images using the `IntersectionObserver` API
+* Revised ID and class naming schemes in HTML and CSS to shorten repetitive lengthy names
+* Revised image folder structure on account of previous changes to separation of static and dynamic images
+* Updated favicon to new custom OneMark logo
+* Updated `insertInlineMessage()` to fade-in over 1 second
+* Fixed portions of mobile-responsive CSS (requires further testing)
+* Relegated unused images and design files to subfolders ignored in `.gitignore`
+
+## Version 0.66 &nbsp;-&nbsp; (2020-01-18)
+* Replaced `page-load.js` module and `page-load.php` with in-line PHP to remove noticeable delay
+    * Changed `index.html` and `main.html` all references in JS and PHP files to use `.php` extensions
+    * Use PHP `header()` instead of JS `window.location.href` to redirect immediately without executing following code
+* Modified `get-bookmarks.php` to reduce page loading lag
+    * Moved assignment of bookmark-tags to `getAllBookmarks()` function
+    * Replaced foreach loop calling `getBookmarkTag()` on each bookmark in `getAllBookmarks()` to get all bookmark-tags for selected user at once
+        * Looped through all tags retrieved to check if `BookmarkID` matches and add tags to `Tags` field of returned bookmarks array
+        * Script execution reduced from average of ~~`~160ms` to `~90ms`~~ *(measured on local environment; production enviroment down from `~90ms` to `~40ms`)*
+* Replaced `window.onload` with `DOMContentLoaded` event listener in `index.php` and `main.php`
+
+## Version 0.65 &nbsp;-&nbsp; (2020-01-14)
+* Added monitoring plug-in to Heroku to keep dyno active 24/7
+    * Achieved with NewRelic Synthetics ping option at an interval of 15 minutes
 
 ## Version 0.64 &nbsp;-&nbsp; (2020-01-12)
 * Fixed critical error in `createTag()` caused by `querySelector` processing speed
@@ -25,6 +65,7 @@
 * Fixed error in `RegExp` creation in `searchBookmarks()` causing bookmarks with spaces in any of their properties to be incorrectly displayed at all times
 * Updated `searchBookmarks()` to use ES6 destructuring assignment and `map()` array function in place of repetitive code where applicable
 * Updated `db-connect.php` to use environment variables instead of hardcoded database credentials
+* Updated `main.js` and `login.js` to use string literals instead of concatenation
 
 ## Version 0.63 &nbsp;-&nbsp; (2020-01-10)
 * Created `page-load.js` to solve issue of page flicker between login and main pages
@@ -120,8 +161,6 @@
 * Settings modals
     * Account info (date created, total bookmarks, storage space, etc.)
     * Edit account (email, password, username)
-* Edit modal - remove image button (set to no image url)
-* Lazy-load elements not in viewport using `IntersectionObserver`
 * Bookmark folder system
     * **Option 1:** Use `activeBookmarks` for filtering and possibly for grouping with root levels in JSON as folders and sub-levels as contents
     * **Option 2:** Add `active` flag to each bookmark and remove `activeBookmarks` array.
@@ -130,32 +169,34 @@
     * Edit mode - Shrink bookmarks / folders to show margin for group selection. Colored border on highlight. Drag & drop - onto folder to add; onto breadcrumb / file-explorer menu to remove / move to higher directory
 
 ## Medium Priority:
-* Page sequencing and navigation (max bookmarks per screen); jump to specific page
-* Sort bookmarks (lexicographic, date created, date modified, manual w/ drag & drop, etc.)
+* Confirm email on register with PHP
+* *'Forgot password?'* option to reset via email
 * Bookmark views (tiles, content, list, etc.)
+* Custom error pages - 403, 404 (open book with pages torn out)
 * Drag-and-drop images onto upload
 * Undo function ~~- transfer bookmark information to `removedBookmarks` array before deleting (will only last until page renavigation); dual-layer array for future group actions~~
     * Record all reversible actions to transient, multi-dimensional `actionHistory` array
 * Add close button to toasts and inline messages
 * Add name column to Token db-table (i.e. Windows 10-PC / Chrome / IP Address) and date created, last accessed, and possibly revoked for authenticating other apps / users
+* Expand `searchBookmarks()` features
+    * Add "-" prefix to exclude term from results
+    * Add "has:" prefix with "image" and "tags" as parameter options
+    * Add "folder:" prefix (dependent on folder implementation)
+    * Add dropdown UI for advanced search as more user-friendly option for prefixes
 
 ## Low Priority:
-* Modify `insertInlineMessage` to allow for different styles (particularly for form validation response text under the inputs)
-* Custom error pages - 403, 404 (open book with pages torn out)
 * Export/import bookmarks
     * Download images and associate with other bookmark info in JSON
     * Import by batch uploading each bookmark and skipping conflicts and errors (to be remedied manually)
-* Confirm email on register with PHP
-* *'Forgot password?'* option to reset via email
 * Image cleanup script to check database at set intervals for images not associated with any bookmarks
 * Add icon to *'No Bookmarks'* overlay
 * Background image and theme color selection
-* Logo - Book with visible bookmark
 * In-line image cropping
 * Compress large images on upload
 * Create sprite-sheet for small icons
 * Share read-only view of bookmarks via link
 * Include HTMLtoCanvas library for screenshot uploads
+* Modify `insertInlineMessage` to allow for different styles ~~(particularly for form validation response text under the inputs)~~
 * Modify logging function to output more info in JSON format and read via custom reader
     * **Production:** Implement Monolog library and read via third-party log reader
 
@@ -230,3 +271,28 @@
 * Updated `searchBookmarks()` to use ES6 destructuring assignment and `map()` array function in place of repetitive code where applicable
 * Updated `db-connect.php` to use environment variables instead of hardcoded database credentials
 * Updated `main.js` and `login.js` to use string literals instead of concatenation
+* Add monitoring plug-in to Heroku to keep dyno active 24/7
+    * Achieved with NewRelic Synthetics ping option at an interval of 15 minutes
+* Replace `page-load.js` module with in-line PHP to remove noticeable delay
+    * Change `index.html` and `main.html` to use `.php` extensions and all references in JS and PHP files
+    * Use PHP header to redirect immediately without following code execution instead of JS window.location.href
+* Modify `get-bookmarks.php` to reduce page loading lag
+    * Move assignment of bookmark-tags to `getAllBookmarks(...)` function
+    * Replace foreach loop calling `getBookmarkTag(...)` on each bookmark in `getAllBookmarks(...)` to get all bookmark-tags for selected user at once
+        * Loop through all tags retrieved to check if `BookmarkID` matches and add tags to `Tags` field of returned bookmarks array
+        * Script execution reduced from average of `~160ms` to `~90ms`
+* Replace `window.onload` with `DOMContentLoaded` event listener
+* Edit modal - remove image button (set to no image url)
+* Logo - Book with visible bookmark
+* Lazy-load elements not in viewport using `IntersectionObserver`
+* Update `insertInlineMessage()` to fade in with a 1 iteration keyframe animation
+* Merged upload- and edit-bookmark modals into one dynamic modal
+    * Removed several extraneous element attributes related to differentiating between elements on edit and upload modals
+    * Modified functions, event listeners, and global variables associated with previous configuration to now directly reference the unique elements on the bookmark-modal instead of dynamically creating IDs
+* Fixed `IntersectionObserver` implementation, which only observed images created at window load and not newly created bookmarks
+    * Observer is now created as a global variable and bookmark images are observed upon creation in `createBookmark()` instead of all at once on window load
+* Sort bookmarks (lexicographic, date created, date modified, ~~manual w/ drag & drop, etc.~~ visits)
+    * ~~Sort types only need one switch case per type (cascade ascending and descending to one case); reverse sorted array order for asc / desc~~ *Implementing the sort function this way would require two operations instead of one. Due to the simple one-line implementation for each sort, simply swapping the order of the elements for a reversal is less computationally expensive and simpler to write*
+    * Store current sort as global (transient) or in localStorage (persistent)
+    * Use large interval for sort index to allow insertion of new bookmarks without resorting
+    * Add visits column (default = 0) to Bookmarks db-table

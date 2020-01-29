@@ -1,8 +1,8 @@
 /********************* VARIABLES *********************/
 :root {
     --theme-color: rgb(0, 115, 190);
-    --theme-image-panel: url("../images/assets/panel-white-mountain.jpg");
-    --theme-image-wrapper: url("../images/assets/purple-mountain.jpg");
+    --theme-image-panel: url("../images/panel-white-mountain.jpg");
+    --theme-image-wrapper: url("../images/purple-mountain.jpg");
     --green: rgb(70, 190, 70);
     --blue-med: rgb(20, 90, 170);
     --blue-light: rgb(0, 115, 190);
@@ -110,7 +110,7 @@ button:hover {
 	background: var(--blue-light);
 }
 
-.button-hollow {
+.btn-hollow {
     width: fit-content;
     padding: 1rem;
     margin: 0.5rem 0;
@@ -120,9 +120,10 @@ button:hover {
     font-family: "Roboto";
     color: #000;
     border: 2px solid #000;
+    border-radius: 0;
 }
 
-.button-hollow:hover {
+.btn-hollow:hover {
     border-radius: 3px;
     background-color: var(--theme-color);
     border-color: var(--theme-color);
@@ -130,7 +131,7 @@ button:hover {
 }
 
 .bg-prism {
-    background-image: url("../images/assets/background-prism-white.png");
+    background-image: url("../images/background-prism-white.png");
     background-repeat: repeat;
 }
 
@@ -209,35 +210,8 @@ nav {
     z-index: 5;
 }
 
-.nav-btn {
-    display: flex;
-    align-self: center;
-    align-items: center;
-    margin: 0 1rem;
-	font-size: 1.2rem;
-    font-weight: 500;
-    cursor: pointer;
-    color: #dfdfdf;
-    transition: 0.1s all ease-in-out;
-}
-
-.nav-btn:hover, #open-upload-modal:hover::before {
-    color: #fff;
-}
-
-#open-upload-modal::before {
-    content: "+";
-    margin: 0 0.4rem;
-    font-size: 1.4em;
-}
-
-#open-upload-modal::after {
-    content: "Create";
-    text-transform: uppercase;
-}
-
 #searchbar {
-    margin: 0.2rem 0;
+    margin: 0.2rem auto;
     padding: 0.4rem 1rem;
     max-width: 50vw;
     border: none;
@@ -250,6 +224,80 @@ nav {
 
 #searchbar::-webkit-input-placeholder {
     opacity: 1;
+}
+
+.nav-menu {
+    position: relative;
+    display: flex;
+}
+
+.nav-btn {
+    display: flex;
+    align-self: center;
+    align-items: center;
+    margin: 0 0.5rem;
+	font-size: 1.2rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: #dfdfdf;
+    transition: 0.1s all ease-in-out;
+}
+
+.nav-btn:hover, #create-bookmark:hover::before {
+    color: #fff;
+}
+#create-bookmark {
+    margin: 0 auto 0 1rem;
+}
+
+#create-bookmark::before {
+    content: "+";
+    margin: 0 0.4rem;
+    font-size: 1.4em;
+}
+
+#create-bookmark::after {
+    content: "Create";
+    text-transform: uppercase;
+}
+
+.nav-menu.sort {
+    margin-left: auto;
+}
+
+#sortmenu {
+    margin-left: auto;
+}
+
+#sortmenu::before {
+    content: "\2191 \2193";
+    padding: 0 5px 5px 0;
+    cursor: pointer;
+}
+
+#sortmenu::after {
+    content: "Sort";
+    text-transform: uppercase;
+}
+
+.sortmenu-btn::before {
+    content: attr(data-text);
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.sortmenu-btn.asc::after {
+    content: "\2191";
+    padding-left: 1rem;
+}
+
+.sortmenu-btn.desc::after {
+    content: "\2193";
+    padding-left: 1rem;
+}
+
+#sidemenu {
+    margin-right: 1rem;
 }
 
 #sidemenu::before {
@@ -273,9 +321,11 @@ nav {
     border-color: #fff;
 }
 
-#sidemenu-content {
+#sortmenu-content, #sidemenu-content {
     position: absolute;
-    top: 61px;
+    display: flex;
+    flex-direction: column;
+    top: 52px;
     right: 0;
     font-size: 1rem;
     font-weight: 500;
@@ -285,13 +335,17 @@ nav {
     z-index: 5;
 }
 
-.sidemenu-btn {
-    padding: 0.9rem 1.7rem;
+.sortmenu-btn, .sidemenu-btn {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.7rem 1.2rem;
+    width: 100%;
+    max-width: -webkit-fill-available;
     cursor: pointer;
     user-select: none;
 }
 
-.sidemenu-btn:hover {
+.sortmenu-btn:hover, .sidemenu-btn:hover {
     color: #fff;
     background-color: rgba(25, 25, 25, 0.85);
 }
@@ -323,13 +377,8 @@ input[type="button"], input[type="submit"] {
     border-radius: 25px;
 }
 
-.file-input {
-	overflow: hidden;
-	position: absolute;
-	width: 1px !important;
-	height: 1px;
-	opacity: 0;
-	z-index: -1;
+.between {
+    justify-content: space-between;
 }
 
 .file-input-group {
@@ -342,12 +391,21 @@ input[type="button"], input[type="submit"] {
 	cursor: pointer;
 }
 
-.file-input-button, .file-input-filename {
+.file-input {
+	overflow: hidden;
+	position: absolute;
+	width: 1px !important;
+	height: 1px;
+	opacity: 0;
+	z-index: -1;
+}
+
+.file-input-btn, .file-input-name {
 	padding: 5px 8px 10px 8px;
 	height: 16px;
 }
 
-.file-input-button {
+.file-input-btn {
     display: inline-block;
     font-size: 18px;
     border: 2px solid #000;
@@ -357,20 +415,9 @@ input[type="button"], input[type="submit"] {
     transition: 0.2s all;
 }
 
-.file-input-button:hover, .file-input-filename:not(.hidden) + .file-input-button {
-    color: #fff;
-    background-color: var(--blue-light);
-    border-color: var(--blue-light);
-    border-radius: 3px;
-}
-
-.file-input-filename:not(.hidden) + .file-input-button {
-    border-radius: 3px 0 0 3px;
-}
-
-.file-input-filename {
+.file-input-name {
 	display: inline-block;
-    max-width: 580px;
+    max-width: 280px;
 	vertical-align: top;
 	text-align: center;
 	text-overflow: ellipsis;
@@ -382,14 +429,34 @@ input[type="button"], input[type="submit"] {
 	overflow: hidden;
 }
 
-.file-input-filename:not(.hidden) + .file-input-button > .file-input-icon, .file-input-button:hover > .file-input-icon {
-    filter: invert(1);
+.file-input-btn:hover, .file-input-name:not(.hidden) + .file-input-btn {
+    color: #fff;
+    background-color: var(--blue-light);
+    border-color: var(--blue-light);
+    border-radius: 3px;
+}
+
+.file-input-btn.del {
+    cursor: pointer;
+}
+
+.file-input-btn.del:hover {
+    background-color: var(--red);
+    border-color: var(--red);
 }
 
 .file-input-icon {
-	margin: -4px 1px 0 0;
+	margin: -4px 4px 0 0;
     vertical-align: middle;
     transition: 0.2s all;
+}
+
+.file-input-name:not(.hidden) + .file-input-btn {
+    border-radius: 3px 0 0 3px;
+}
+
+.file-input-name:not(.hidden) + .file-input-btn > .file-input-icon, .file-input-btn:hover > .file-input-icon {
+    filter: invert(1);
 }
 
 .checkbox-ctn {
@@ -675,12 +742,14 @@ input:placeholder-shown.invalid + label:hover {
 
 /********************* UPLOAD / EDIT *********************/
 .preview-output {
+    position: relative;
     width: 640px;
     max-width: 100%;
 	height: 360px;
 	margin: 0 auto 1rem auto;
 	border: 1px solid #2F2F2F;
-	background: #171717;
+    background: #171717;
+    cursor: pointer;
 }
 
 .bk-left {
@@ -832,10 +901,6 @@ input:placeholder-shown.invalid + label:hover {
     box-shadow: 0px 0px 6px 4px #555;
 }
 
-.bookmark-preview {
-    position: relative;
-}
-
 .image {
 	width: 100%;
 	max-width: 100%;
@@ -983,6 +1048,12 @@ input:placeholder-shown.invalid + label:hover {
     overflow: auto;
     text-overflow: clip;
     font-weight: 400;
+    animation: fade-in 1s forwards;
+}
+
+@keyframes fade-in {
+    0%      {opacity: 0;}
+    100%    {opacity: 1;}
 }
 
 .bg-green {
@@ -1041,15 +1112,7 @@ input:placeholder-shown.invalid + label:hover {
     }
 }
 
-@media screen and (max-width: 800px) {
-    .bookmark {
-        width: calc(100% / 2);
-        max-width: calc(100% / 2);
-        max-height: 30vw;
-    }
-}
-
-@media screen and (max-width: 650px) {
+@media screen and (max-width: 740px) {
     .lg-wrapper {
         align-items: flex-end;
     }
@@ -1073,11 +1136,11 @@ input:placeholder-shown.invalid + label:hover {
         max-height: none;
     }
 
-    #open-upload-modal::after {
+    #create-bookmark::after {
         content: "";
     }
 
-    #sidemenu::before {
+    #sidemenu::before, #sortmenu::after {
         content: "";
     }
 
@@ -1086,11 +1149,15 @@ input:placeholder-shown.invalid + label:hover {
     }
 
     .modal-content {
-        width: 100%;
+        max-width: 485px;
     }
 
     .preview-output {
-        height: 169px;
+        height: 230px;
+    }
+
+    .file-input-name {
+        max-width: 50px;
     }
 }
 

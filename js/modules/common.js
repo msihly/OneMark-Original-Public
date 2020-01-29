@@ -35,26 +35,22 @@ export function debounce(fn, delay) {
 
 export function addListeners(data) {
 	var errors = [];
-    data.forEach(function(ele) {
-		if (ele.eleID) {
-            let element = document.getElementById(ele.eleID);
-            if (element) {
-                element.addEventListener(ele.eventType, !ele.debounce ? ele.function : debounce(ele.function.bind(element), ele.debounce));
-             } else {
-                errors.push("Could not find element with ID: " + ele.eleID);
-             }
-		} else if (ele.dataListener) {
-            let elements = document.querySelectorAll("[data-listener~='" + ele.dataListener + "']");
-            if (elements.length > 0) {
-                elements.forEach(e => {
-                    e.addEventListener(ele.eventType, !ele.debounce ? ele.function : debounce(ele.function.bind(e), ele.debounce));
-                });
-            } else {
-                errors.push("Could not find any elements with data-listener attribute: " + ele.dataListener);
-            }
-        } else if (ele.domObject) {
-            ele.domObject.addEventListener(ele.eventType, !ele.debounce ? ele.function : debounce(ele.function.bind(ele.domObject), ele.debounce));
+    data.forEach(d => {
+        let elements, errMsg;
+        if (d.id) {
+            elements = [document.getElementById(d.id)];
+            errMsg = `Could not find element with ID: ${d.id}`;
+        } else if (d.class) {
+            elements = [...document.getElementsByClassName(d.class)];
+            errMsg = `Could not find any elements with class: ${d.class}`;
+        } else if (d.dataListener) {
+            elements = document.querySelectorAll(`[data-listener~='${d.dataListener}']`);
+            errMsg = `Could not find any elements with data-listener attribute: ${d.dataListener}`;
+        } else if (d.domObject) {
+            elements = [d.domObject];
         }
+        if (elements.length > 0) { elements.forEach(e => e.addEventListener(d.eventType, !d.debounce ? d.function : debounce(d.function.bind(e), d.debounce))); }
+        else { errors.push(errMsg); }
     });
 	if (errors.length > 0) { console.log(errors); }
 }
@@ -65,8 +61,8 @@ export function toast(message, type) {
     toast.innerHTML = message;
 
     switch (type) {
-        case "success": toast.classList.add("bg-blue");   break;
-        case "error":   toast.classList.add("bg-red");    break;
+        case "success": toast.classList.add("bg-blue"); break;
+        case "error": toast.classList.add("bg-red"); break;
         case "warning": toast.classList.add("bg-orange"); break;
     }
 
@@ -81,24 +77,23 @@ export function toast(message, type) {
 }
 
 export function insertInlineMessage(position, parentNode, refNode, text, type) {
-    var tempID = (parentNode + "-" + refNode).replace(/[#.]/g, ""),
-        [parentNode, refNode, prevNode] = document.querySelectorAll(parentNode + ", " + refNode + ", #" + tempID),
+    var tempID = (`${parentNode}-${refNode}`).replace(/[#.]/g, ""),
+        [parentNode, refNode, prevNode] = document.querySelectorAll(`${parentNode}, ${refNode}, #${tempID}`),
         msgNode = document.createElement("div");
 
     msgNode.classList.add("inline-message");
     msgNode.innerHTML = text;
     msgNode.id = tempID;
     if (prevNode) { prevNode.remove(); }
-    //Previous node only removed when inserting at same location. Insert ID(s) into array and remove later when new messages are inserted
     switch (type) {
-        case "success": msgNode.classList.add("bg-green");  break;
-        case "error":   msgNode.classList.add("bg-red");    break;
+        case "success": msgNode.classList.add("bg-green"); break;
+        case "error": msgNode.classList.add("bg-red"); break;
         case "warning": msgNode.classList.add("bg-orange"); break;
     }
 
     switch (position) {
-        case "before":  return parentNode.insertBefore(msgNode, refNode);
-        case "after":   return parentNode.insertBefore(msgNode, refNode.nextSibling);
+        case "before": return parentNode.insertBefore(msgNode, refNode);
+        case "after": return parentNode.insertBefore(msgNode, refNode.nextSibling);
     }
 }
 
@@ -128,7 +123,7 @@ export function isValid(element) {
             break;
         case "password":
             if (element.value.length < 8) { validity.Message = "Password must be a minimum of 8 characters"; return validity; }
-            var passConf = document.getElementById(element.id + "-confirm");
+            var passConf = document.getElementById(`${element.id}-confirm`);
             if (passConf) { errorCheck.call(passConf); }
             break;
         case "password-confirm":
@@ -140,7 +135,7 @@ export function isValid(element) {
 }
 
 export function errorCheck() {
-    var label = document.getElementById(this.id + "-error"),
+    var label = document.getElementById(`${this.id}-error`),
         validity = isValid(this);
 
     if(label === null) { return; }

@@ -1,5 +1,5 @@
 <?php
-require_once("restricted/db-connect.php");
+require_once("db-connect.php");
 include_once("logging.php");
 
 function getAccessLevel(int $userID) {
@@ -210,7 +210,7 @@ function deleteBookmark(int $bookmarkID) {
 
 function getBookmark(int $bookmarkID) {
     GLOBAL $conn;
-    $query = "SELECT      b.Title, b.PageURL, b.ImageID, i.ImagePath, b.DateCreated, b.DateModified
+    $query = "SELECT      b.Title, b.PageURL, b.ImageID, i.ImagePath, b.DateCreated, b.DateModified, b.Views
               FROM        Bookmark AS b INNER JOIN Images AS i
                               ON b.ImageID = i.ImageID
               WHERE       b.BookmarkID = :bookmarkID;";
@@ -224,16 +224,38 @@ function getBookmark(int $bookmarkID) {
 
 function getAllBookmarks(int $userID) {
     GLOBAL $conn;
-    $query = "SELECT      b.BookmarkID, b.Title, b.PageURL, i.ImagePath, b.DateCreated, b.DateModified
+    $query = "SELECT      b.BookmarkID, b.Title, b.PageURL, i.ImagePath, b.DateCreated, b.DateModified, b.Views
               FROM        Bookmark AS b INNER JOIN Images AS i
                               ON b.ImageID = i.ImageID
               WHERE       b.UserID = :userID;";
+
     $stmt = $conn->prepare($query);
     $stmt->bindParam(":userID", $userID);
     $stmt->execute();
-    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $bookmarks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    return empty($result) ? [] : $result;
+    if (!empty($bookmarks)) {
+        $query = "SELECT      b_t.BookmarkID, t.TagText
+                  FROM        Tag AS t INNER JOIN BookmarkTag AS b_t
+                              ON t.TagID = b_t.TagID
+                  WHERE       b_t.BookmarkID IN (
+                      SELECT    b.BookmarkID
+                      FROM      Bookmark AS b
+                      WHERE     b.UserID = :userID
+                  );";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(":userID", $userID);
+        $stmt->execute();
+        $tags = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($bookmarks as $idx => $bk) {
+            $bookmarks[$idx]["Tags"] = array_column(array_filter($tags, function($var) use($bk) {
+                return ($var["BookmarkID"] == $bk["BookmarkID"]);
+            }), "TagText");
+        }
+    }
+
+    return empty($bookmarks) ? [] : $bookmarks;
 }
 
 function getImagePath(int $imageID) {
@@ -268,6 +290,18 @@ function editBookmark(int $bookmarkID, int $userID, string $title, string $pageU
     editBookmarkTags($bookmarkID, $tags);
 
     return $dateModified;
+}
+
+function addView(int $bookmarkID, int $userID) {
+    GLOBAL $conn;
+
+    $query = "UPDATE      Bookmark AS b
+              SET         b.Views = b.Views + 1
+              WHERE       b.UserID = :userID AND b.BookmarkID = :bookmarkID;";
+    $stmt = $conn->prepare($query);
+    $stmt->bindParam(":bookmarkID", $bookmarkID);
+    $stmt->bindParam(":userID", $userID);
+    $stmt->execute();
 }
 
 function getUser(string $username) {
