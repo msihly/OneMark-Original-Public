@@ -14,6 +14,33 @@
 ---
 # Changelog
 *The version histories below do not account for all changes made as documentation is written from the To-Do-List in the following major section and from memory prior to each commit. Additionally, minor changes are typically not recorded in the changelog or in the To-Do-List. Analysis of the differences on GitHub can be used to identify undocumented changes when necessary.*
+## Version 0.69 &nbsp;-&nbsp; (2020-02-02)
+* Added *'Image Size'* sort option
+    * Added `ImageSize` column to `Images` db-table
+* Added dynamic alert modals with `createAlert()`
+    * The minimum required to deliver a proper front-end experience has been implemented with aspects hard-coded as necessary to prevent excessive focus on recreating a feature with several established, extensive libaries that can be implemented in prodctuion
+    * *'Info'* option added to bookmark dropdown menus to display metadata info (Date Created, Date Modified, View Count, Image Size)
+        * Added `formatBytes()` function to `home.js` to pretty-print *'Image Size'*
+    * Updated `modalClose()` function to support optional deletion of modal
+* Added *'Account'* option, which opens a dynamic tabbed modal, to side-menu
+    * Account info tab currently contains username, email, date account created, and account type
+        * Created `account-info.php` and added associated functions to `db-functions.php`
+    * Password tab allows updating current password
+        * Created `update-pass.php` and added associated functions to `db-functions.php`
+        * Added `updatePassword()` function to `home.js`
+        * Updated `isValid()` function to support comparison of current password to new password
+    * Moved `switchPanel()` function from `login.js` to `common.js`
+    * Added `swtichTab()` function to `common.js` to support tabbed-panels
+* Fixed undesired behavior of input title and error labels when not using reversed column order
+* Fixed AuthToken login bug caused by previous change from fetching full `login.php` in JS to in-line php session check
+* Fixed `randomizeTheme()` bug causing same theme to be picked consecutively
+    * Added `getRandomInt()` function to `common.js` module to facilitate recursive random integer generation
+* Consolidated global variables in `common.js` and `login.js` into singular global objects
+    * Renamed `Globals` object in `home.js` to `IdxGlobals` and added similar prefixes to the new globals to prevent naming clashes
+* Renamed JavaScript and HTML/PHP files to make the *'main'* page the index page
+    * The former `index.php` (containing the login page) is now `login.php`
+    * The former `main.php` (containing the main site) is now `index.php`, and `main.js` is now `home.js`
+
 ## Version 0.68 &nbsp;-&nbsp; (2020-01-29)
 * Merged upload- and edit-bookmark modals into one dynamic modal
     * Removed several extraneous element attributes related to differentiating between elements on edit and upload modals
@@ -21,13 +48,13 @@
 * Fixed `IntersectionObserver` implementation, which only observed images created at window load and not newly created bookmarks
     * Observer is now created as a global variable and bookmark images are observed upon creation in `createBookmark()` instead of all at once on window load
 * Consolidated global variables (excluding `lazyObserver`) into single global object `Globals`
-* Rewrote `addListeners()` function in `Common.js` to simplify structure, consolidate repeated code, and add support for classes as identifiers
-* Updated `Common.js` to use string literals
+* Rewrote `addListeners()` function in `common.js` to simplify structure, consolidate repeated code, and add support for classes as identifiers
+* Updated `common.js` to use string literals
 * Added bookmark sorting functionality
     * Sort options include Title, Views, Date Created, and Date Modified with an ascending and descending option for each
     * Added `Views` column (default = 0) to `Bookmarks` db-table to support new sort type
     * Added `add-view.php` file for asynchronus incrementation of bookmark view count
-    * Updated navbar HTML structure and CSS styling to support new 'Sort' menu
+    * Updated navbar HTML structure and CSS styling to support new *'Sort'* menu
 * Moved `db-functions.php` and `logging.php` to restricted folders as they should not be directly accessible by users
 
 ## Version 0.67 &nbsp;-&nbsp; (2020-01-24)
@@ -154,47 +181,43 @@
 # Tentative To-Do-List
 *The contents of this section are not meant to track changes or provide gaurantees of features to be added. This To-Do-List undergoes constant modification during development that is not reflected here and only serves as a space to store ideas for future features and implementation strategies.*
 ## High Priority:
-* Alert modal
-    * Options passed to `switch` or `if_else` chain (types of buttons shown, if any; enable / disable closing the dialog box without selecting an option; opacity, color, blur of modal background)
-    * Display metadata info (Date Created, Date Modified, etc.) in its own alert
-        * Add *'Info'* option to bookmark dropdown
-* Settings modals
-    * Account info (date created, total bookmarks, storage space, etc.)
-    * Edit account (email, password, username)
 * Bookmark folder system
     * **Option 1:** Use `activeBookmarks` for filtering and possibly for grouping with root levels in JSON as folders and sub-levels as contents
     * **Option 2:** Add `active` flag to each bookmark and remove `activeBookmarks` array.
         * Database `Folder` table with folder information linked to each bookmark; null `FolderID` for root directory
         * PHP loop through `bindParam()` on folder modification to make use of prepared statements
     * Edit mode - Shrink bookmarks / folders to show margin for group selection. Colored border on highlight. Drag & drop - onto folder to add; onto breadcrumb / file-explorer menu to remove / move to higher directory
-
-## Medium Priority:
+* Update *'Account'* modal
+    * Add options to change email and username with password input required to *'Account Info'* tab
+    * Add total bookmarks, total tags, total unique tags, and image size total to *'Storage'* tab
 * Confirm email on register with PHP
 * *'Forgot password?'* option to reset via email
-* Bookmark views (tiles, content, list, etc.)
 * Custom error pages - 403, 404 (open book with pages torn out)
-* Drag-and-drop images onto upload
-* Undo function ~~- transfer bookmark information to `removedBookmarks` array before deleting (will only last until page renavigation); dual-layer array for future group actions~~
-    * Record all reversible actions to transient, multi-dimensional `actionHistory` array
-* Add close button to toasts and inline messages
-* Add name column to Token db-table (i.e. Windows 10-PC / Chrome / IP Address) and date created, last accessed, and possibly revoked for authenticating other apps / users
+
+## Medium Priority:
 * Expand `searchBookmarks()` features
     * Add "-" prefix to exclude term from results
     * Add "has:" prefix with "image" and "tags" as parameter options
     * Add "folder:" prefix (dependent on folder implementation)
     * Add dropdown UI for advanced search as more user-friendly option for prefixes
+* Bookmark views (tiles, content, list, etc.)
+* Compress large images on upload
+* Add close button to toasts and inline messages
+* Add name column to Token db-table (i.e. Windows 10-PC / Chrome / IP Address) and date created, last accessed, and possibly revoked for authenticating other apps / users
+* Drag-and-drop images onto upload
+* Undo function ~~- transfer bookmark information to `removedBookmarks` array before deleting (will only last until page renavigation); dual-layer array for future group actions~~
+    * Record all reversible actions to transient, multi-dimensional `actionHistory` array
 
 ## Low Priority:
+* Add icon to *'No Bookmarks'* overlay
+* Create sprite-sheet for small icons
+* Share read-only view of bookmarks via link
+* Image cleanup script to check database at set intervals for images not associated with any bookmarks
+* In-line image cropping
+* Background image and theme color selection
 * Export/import bookmarks
     * Download images and associate with other bookmark info in JSON
     * Import by batch uploading each bookmark and skipping conflicts and errors (to be remedied manually)
-* Image cleanup script to check database at set intervals for images not associated with any bookmarks
-* Add icon to *'No Bookmarks'* overlay
-* Background image and theme color selection
-* In-line image cropping
-* Compress large images on upload
-* Create sprite-sheet for small icons
-* Share read-only view of bookmarks via link
 * Include HTMLtoCanvas library for screenshot uploads
 * Modify `insertInlineMessage` to allow for different styles ~~(particularly for form validation response text under the inputs)~~
 * Modify logging function to output more info in JSON format and read via custom reader
@@ -296,3 +319,13 @@
     * Store current sort as global (transient) or in localStorage (persistent)
     * Use large interval for sort index to allow insertion of new bookmarks without resorting
     * Add visits column (default = 0) to Bookmarks db-table
+* Alert modals
+    * Options passed to `switch` or `if_else` chain ~~(types of buttons shown, if any; enable / disable closing the dialog box without selecting an option; opacity, color, blur of modal background)~~
+        * Recreating a fully-featured alert system is unnecessary as it can be easily implemented using various established libraries in production; therefore, only the minimum required to deliver a proper front-end experience will be implemented with aspects hard-coded as necessary
+    * Display metadata info (Date Created, Date Modified, View Count, Image Size) in its own alert
+        * Add *'Info'* option to bookmark dropdown
+* Add size column to `Images` db-table
+* Settings modals
+    * Account info (username, email, date created, account type)
+    * Edit account (password)
+* Fix AuthToken login bug caused by previous change from fetching full `login.php` in JS to in-line php session check

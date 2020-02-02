@@ -2,11 +2,11 @@ import * as Common from "./modules/common.js";
 
 const eventListeners = [
     {
-        "eleID": "login-form",
+        "id": "login-form",
         "eventType": "submit",
         "function": login
     }, {
-        "eleID": "register-form",
+        "id": "register-form",
         "eventType": "submit",
         "function": register
     }, {
@@ -36,17 +36,19 @@ const themes = [
     }
 ];
 
-var index = 0;
+var LgGlobals = {
+    index: 0
+}
 
 window.addEventListener("DOMContentLoaded", async function() {
     document.getElementById("login-switch").addEventListener("click", event => {
         event.preventDefault();
-        switchPanel("register-panel", "login-panel");
+        Common.switchPanel("register-panel", "login-panel");
         randomizeTheme();
     });
     document.getElementById("register-switch").addEventListener("click", event => {
         event.preventDefault();
-        switchPanel("login-panel", "register-panel");
+        Common.switchPanel("login-panel", "register-panel");
         randomizeTheme();
     });
 
@@ -54,14 +56,12 @@ window.addEventListener("DOMContentLoaded", async function() {
 });
 
 function randomizeTheme() {
-    var root = document.documentElement,
-        tempIndex = index;
-    while (tempIndex == index) { tempIndex = Math.floor(Math.random() * themes.length); }
-    index = tempIndex;
+    LgGlobals.index = Common.getRandomInt(0, themes.length - 1, LgGlobals.index);
 
-    root.style.setProperty("--theme-color", `var(--${themes[index].color})`);
-    root.style.setProperty("--theme-image-wrapper", `url(${themes[index].wrapper})`);
-    root.style.setProperty("--theme-image-panel", `url(${themes[index].panel})`);
+    var root = document.documentElement;
+    root.style.setProperty("--theme-color", `var(--${themes[LgGlobals.index].color})`);
+    root.style.setProperty("--theme-image-wrapper", `url(${themes[LgGlobals.index].wrapper})`);
+    root.style.setProperty("--theme-image-panel", `url(${themes[LgGlobals.index].panel})`);
 }
 
 async function login(event) {
@@ -73,7 +73,7 @@ async function login(event) {
     response = await response.json();
     if (response.Success) {
         Common.insertInlineMessage("after", "#login-form", "#login", response.Message, "success");
-        setTimeout(() => window.location.href = "/main.php", 1000);
+        setTimeout(() => window.location.href = "/index.php", 1000);
     } else {
         Common.insertInlineMessage("after", "#login-form", "#login", response.Message, "error");
     }
@@ -88,20 +88,8 @@ async function register(event) {
     response = await response.json();
     if (response.Success) {
         Common.insertInlineMessage("after", "#register-form", "#register", response.Message, "success");
-        setTimeout(() => window.location.href = "/main.php", 1000);
+        setTimeout(() => window.location.href = "/index.php", 1000);
     } else {
         Common.insertInlineMessage("after", "#register-form", "#register", response.Message, "error");
     }
-}
-
-function switchPanel(hiddenPanel, visiblePanel) {
-    hiddenPanel = document.getElementById(hiddenPanel),
-    visiblePanel = document.getElementById(visiblePanel);
-
-    visiblePanel.classList.toggle("hidden-panel");
-    setTimeout(() => {
-        visiblePanel.classList.toggle("hidden");
-        hiddenPanel.classList.toggle("hidden");
-        hiddenPanel.classList.toggle("hidden-panel");
-    }, 200);
 }

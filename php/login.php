@@ -2,8 +2,6 @@
 require_once("restricted/db-functions.php");
 include_once("restricted/logging.php");
 
-//delete token and cookie on logout and password change
-
 try {
     if (isset($_SESSION["uid"])) {
         echo json_encode(["Success" => true, "Message" => "User already logged in"]);

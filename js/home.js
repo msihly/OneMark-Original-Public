@@ -6,13 +6,17 @@ const eventListeners = [
         "eventType": "click",
         "function": (event) => {modalBookmark(event, "upload");}
     }, {
+        "id": "sortmenu",
+        "eventType": "click",
+        "function": toggleMenu
+    }, {
         "id": "sidemenu",
         "eventType": "click",
         "function": toggleMenu
     }, {
-        "id": "sortmenu",
+        "id": "account",
         "eventType": "click",
-        "function": toggleMenu
+        "function": modalAccount
     }, {
         "id": "logout",
         "eventType": "click",
@@ -44,6 +48,10 @@ const eventListeners = [
         "eventType": "click",
         "function": removeUpload
     }, {
+        "id": "acc-pass-form",
+        "eventType": "submit",
+        "function": updatePassword
+    }, {
         "class": "sortmenu-btn",
         "eventType": "click",
         "function": sortBookmarks
@@ -60,20 +68,32 @@ const eventListeners = [
         "eventType": "input",
         "function": Common.errorCheck
     }, {
+        "dataListener": "acc-btn",
+        "eventType": "click",
+        "function": (event) => {
+            Common.switchPanel(IdxGlobals.accCurPanel, event.target.dataset.panel);
+            IdxGlobals.accCurPanel = event.target.dataset.panel;
+            Common.switchTab(IdxGlobals.accCurTab, event.target.id);
+            IdxGlobals.accCurTab = event.target.id;
+        }
+    }, {
         "domObject": document,
         "eventType": "click",
         "function": closeMenus
     }
 ];
 
-var Globals = {
+var IdxGlobals = {
     container: "",
     sort: "",
+    accCurTab: "acc-tab-info",
+    accCurPanel: "acc-panel-info",
     bookmarks: [],
     activeBookmarks: [],
     tags: [],
     openMenus: []
 }
+
 var LazyObserver = new IntersectionObserver(entries => {
     entries.forEach(e => {
         if (e.isIntersecting) {
@@ -85,11 +105,11 @@ var LazyObserver = new IntersectionObserver(entries => {
 });
 
 window.addEventListener("DOMContentLoaded", async function() {
-    Globals.bookmarks = await getBookmarks();
-    Globals.activeBookmarks = [...Globals.bookmarks];
+    IdxGlobals.bookmarks = await getBookmarks();
+    IdxGlobals.activeBookmarks = [...IdxGlobals.bookmarks];
     Common.addListeners(eventListeners);
-    Globals.container = document.getElementById("bookmark-container");
-    if (!bookmarksEmpty(Globals.activeBookmarks)) { createBookmarks(Globals.container, Globals.activeBookmarks); }
+    IdxGlobals.container = document.getElementById("bookmark-container");
+    if (!bookmarksEmpty(IdxGlobals.activeBookmarks)) { createBookmarks(IdxGlobals.container, IdxGlobals.activeBookmarks); }
 });
 
 /******************************* GENERAL *******************************/
@@ -97,11 +117,17 @@ function regexEscape(string) {
     return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
 }
 
+function formatBytes(bytes) {
+    if (bytes < 1) { return "0 B"; }
+    let power = Math.floor(Math.log2(bytes) / 10);
+    return `${(bytes / (1024 ** power)).toFixed(2)} ${("KMGTPEZY"[power - 1] || "")}B`;
+}
+
 function closeMenus() {
-    if (Globals.openMenus.length > 0) {
-        Globals.openMenus.forEach(e => {
+    if (IdxGlobals.openMenus.length > 0) {
+        IdxGlobals.openMenus.forEach(e => {
             e.classList.toggle("hidden");
-            Globals.openMenus.shift();
+            IdxGlobals.openMenus.shift();
         });
     }
 }
@@ -109,10 +135,10 @@ function closeMenus() {
 function toggleMenu() {
     event.stopPropagation();
     var menu = document.getElementById(this.dataset.menu);
-    if (!Globals.openMenus.includes(menu)) {
+    if (!IdxGlobals.openMenus.includes(menu)) {
         closeMenus();
         menu.classList.toggle("hidden");
-        Globals.openMenus.push(menu);
+        IdxGlobals.openMenus.push(menu);
     } else { closeMenus(); }
 }
 
@@ -123,13 +149,39 @@ async function logout(event) {
     response = await response.json();
     if (response.Success) {
         Common.toast(response.Message, "success");
-        setTimeout(function() { window.location.href = "/index.php"; }, 1000);
+        setTimeout(function() { window.location.href = "/login.php"; }, 1000);
     } else {
         Common.toast(response.Message, "error");
     }
 }
 
+async function updatePassword(event) {
+    event.preventDefault();
+    if (!Common.checkErrors([...this.elements])) { return Common.toast("Errors in form fields", "error"); }
+
+    var formData = new FormData(this),
+        response = await fetch("/php/update-pass.php", {method: "POST", body: formData});
+
+    response = await response.json();
+    response.Success ? Common.toast(response.Message, "success") : Common.toast(response.Message, "error");
+}
+
 /******************************* MODAL *******************************/
+async function modalAccount() {
+    var [modal, username, email, dateCreated, accType] = document.querySelectorAll("#acc-modal, #acc-username, #acc-email, #acc-created, #acc-type");
+    let response = await fetch("/php/account-info.php");
+    response = await response.json();
+
+    if (!response.Success) { return Common.toast(response.Message, "error"); }
+    username.innerHTML = response.Info.Username;
+    email.innerHTML = response.Info.Email;
+    dateCreated.innerHTML = response.Info.DateCreated;
+    accType.innerHTML = response.Info.AccessLevel;
+
+    closeMenus();
+	modal.classList.remove("hidden");
+}
+
 function modalBookmark(event, formType) {
     event.preventDefault();
 	event.stopPropagation();
@@ -146,13 +198,13 @@ function modalBookmark(event, formType) {
 
         tagSearch.value = "";
         tagBtn.classList.remove("add", "del");
-        Globals.tags = [];
+        IdxGlobals.tags = [];
         while (tagsCtn.firstChild) { tagsCtn.removeChild(tagsCtn.firstChild); }
 
         form.removeEventListener("submit", editBookmark);
         form.addEventListener("submit", uploadBookmark);
     } else if (formType == "edit") {
-        var	bkInfo = Globals.bookmarks[Globals.bookmarks.findIndex(({BookmarkID}) => BookmarkID == event.target.dataset.parent.substring(1))];
+        var	bkInfo = IdxGlobals.bookmarks[IdxGlobals.bookmarks.findIndex(({BookmarkID}) => BookmarkID == event.target.dataset.parent.substring(1))];
         form.dataset.bkTarget = event.target.dataset.parent;
 
         previewURL.dataset.href = bkInfo.PageURL;
@@ -164,9 +216,9 @@ function modalBookmark(event, formType) {
 
         tagSearch.value = "";
         tagBtn.classList.remove("add", "del");
-        Globals.tags = [...bkInfo.Tags];
+        IdxGlobals.tags = [...bkInfo.Tags];
         while (tagsCtn.firstChild) { tagsCtn.removeChild(tagsCtn.firstChild); }
-        createTags(Globals.tags, tagsCtn);
+        createTags(IdxGlobals.tags, tagsCtn);
 
         Common.errorCheck.call(formURL);
         Common.errorCheck.call(formTitle);
@@ -179,82 +231,29 @@ function modalBookmark(event, formType) {
 	modal.classList.remove("hidden");
 }
 
-function modalClose(event) {
+function modalClose(event, del = false) {
 	var modal = document.getElementById(this.dataset.modal);
-	if (modal == event.target || this.classList.contains("close")) {
-		modal.classList.add("hidden");
-	}
+	if (event.target == modal|| this.classList.contains("close")) { del ? modal.remove() : modal.classList.add("hidden"); }
 }
 
-/******************************* TAGS *******************************/
-function createTag(tagText, tagsCtn) {
-    var tag = `<div class="tag" id="tag-${tagText}">
-                    <div class="tag-text">${tagText}</div>
-                    <span id="tagx-${tagText}" class="tag-x" data-form="${tagsCtn.id.substring(0, tagsCtn.id.indexOf("-"))}">×</span>
-                </div>`;
-    tagsCtn.insertAdjacentHTML("afterbegin", tag);
+/******************************* ALERTS *******************************/
+function createAlert({text = "", buttons = [{"btnText": "Close", "fn": (event) => {modalClose(event, true)}, "class": "close"}]} = {}) {
+    event.stopPropagation();
+    var htmlButtons = "",
+        randID = Math.floor(Math.random() * 100);
+    buttons.forEach(e => htmlButtons += `<button class="${e.class || ""}" data-modal="al-${randID}">${e.btnText}</button>`);
+    var htmlModal = `<div class="modal-container" id="al-${randID}" data-modal="al-${randID}">
+                        <div class="modal-content pad-ctn-1">
+                            <p class="al-text">${text}</p>
+                            ${htmlButtons}
+                        </div>
+                    </div>`;
+    var frag = document.createRange().createContextualFragment(htmlModal);
+    frag.querySelectorAll("button").forEach((e, i) => e.addEventListener("click", buttons[i].fn));
+    frag.getElementById(`al-${randID}`).addEventListener("click", (event) => {modalClose(event, true)});
 
-    var tagX = document.getElementById(`tagx-${tagText}`);
-    tagX.addEventListener("click", function() {
-        let tagBtn = document.getElementById("tag-btn");
-        tagBtn.classList.remove("del");
-        tagBtn.classList.add("add");
-        removeTag(tagText);
-    });
-
-}
-
-function createTags(arr, tagsCtn) {
-    arr.forEach(tagText => { createTag(tagText, tagsCtn); });
-}
-
-function removeTag(tagText) {
-    var tag = document.getElementById(`tag-${tagText}`);
-    tag.remove();
-    Globals.tags = Globals.tags.filter(e => e !== tagText);
-}
-
-function hideTags(arr) {
-    arr.forEach(function(e) { document.getElementById(`tag-${e}`).classList.add("hidden"); });
-}
-
-function showTags(arr) {
-    arr.forEach(function(e) { document.getElementById(`tag-${e}`).classList.remove("hidden"); });
-}
-
-function searchTags() {
-    var tagBtn = document.getElementById("tag-btn");
-    if (this.value.length > 0) {
-        var reTag = new RegExp(regexEscape(this.value), "i"),
-            tagsActive = Globals.tags.filter(e => { return reTag.test(e); });
-        hideTags(Globals.tags);
-        showTags(tagsActive);
-        if (Globals.tags.includes(this.value)) {
-            tagBtn.classList.remove("add");
-            tagBtn.classList.add("del");
-        } else {
-            tagBtn.classList.remove("del");
-            tagBtn.classList.add("add");
-        }
-    } else {
-        showTags(Globals.tags);
-        tagBtn.classList.remove("del", "add");
-    }
-}
-
-function updateTag() {
-    var tagText = document.getElementById("tag-search").value,
-        tagsCtn = document.getElementById("tags");
-    if (this.classList.contains("add")) {
-        Globals.tags.push(tagText);
-        createTag(tagText, tagsCtn);
-        this.classList.remove("add");
-        this.classList.add("del");
-    } else if (this.classList.contains("del")) {
-        removeTag(tagText);
-        this.classList.remove("del");
-        this.classList.add("add");
-    }
+    closeMenus();
+    return frag;
 }
 
 /******************************* FORM *******************************/
@@ -298,16 +297,26 @@ function createBookmark(bkInfo) {
                     <img class="image lazy" id="i${bkInfo.BookmarkID}" src="/images/Lazy-Load.jpg" data-src="${bkInfo.ImagePath}">
                     <div class="menu">
                         <div class="menu-content hidden" id="m${bkInfo.BookmarkID}">
-                            <div id="mc-t${bkInfo.BookmarkID}" data-parent="b${bkInfo.BookmarkID}">Edit</div>
+                            <div id="mc-i${bkInfo.BookmarkID}" data-parent="b${bkInfo.BookmarkID}">Info</div>
+                            <div id="mc-e${bkInfo.BookmarkID}" data-parent="b${bkInfo.BookmarkID}">Edit</div>
                             <div id="mc-d${bkInfo.BookmarkID}" data-parent="b${bkInfo.BookmarkID}">Delete</div>
                         </div>
                         <div class="menu-toggle" id="m-t${bkInfo.BookmarkID}" data-menu="m${bkInfo.BookmarkID}"></div>
                     </div>
                 </div>`;
+    var infoText = `<b>Date Created</b>
+                     ${bkInfo.DateCreated}
+                     <b>Date Modified</b>
+                     ${bkInfo.DateModified}
+                     <b>Image Size</b>
+                     ${formatBytes(bkInfo.ImageSize)}
+                     <b>View Count</b>
+                     ${bkInfo.Views}`;
     var frag = document.createRange().createContextualFragment(html);
     frag.querySelector(`#b${bkInfo.BookmarkID}`).addEventListener("click", openBookmark);
     frag.querySelector(`#m-t${bkInfo.BookmarkID}`).addEventListener("click", toggleMenu);
-    frag.querySelector(`#mc-t${bkInfo.BookmarkID}`).addEventListener("click", function(event) {modalBookmark(event, "edit");});
+    frag.querySelector(`#mc-i${bkInfo.BookmarkID}`).addEventListener("click", () => document.body.appendChild(createAlert({"text": infoText})));
+    frag.querySelector(`#mc-e${bkInfo.BookmarkID}`).addEventListener("click", function(event) { modalBookmark(event, "edit"); });
     frag.querySelector(`#mc-d${bkInfo.BookmarkID}`).addEventListener("click", deleteBookmark);
     LazyObserver.observe(frag.querySelector(`#i${bkInfo.BookmarkID}`));
 
@@ -328,7 +337,7 @@ function openBookmark(event, preview = false) {
             formData = new FormData();
         formData.append("bookmarkID", bookmarkID);
         fetch("/php/add-view.php", {method: "POST", body: formData});
-        let bk = Globals.bookmarks[Globals.bookmarks.findIndex(({BookmarkID}) => BookmarkID == bookmarkID)];
+        let bk = IdxGlobals.bookmarks[IdxGlobals.bookmarks.findIndex(({BookmarkID}) => BookmarkID == bookmarkID)];
         bk.Views = parseInt(bk.Views) + 1;
     }
 }
@@ -346,17 +355,17 @@ async function uploadBookmark(event) {
 
     var formData = new FormData(this);
 
-    if (Globals.bookmarks.some(e => e.PageURL == formData.get("pageURL"))) {
+    if (IdxGlobals.bookmarks.some(e => e.PageURL == formData.get("pageURL"))) {
 		Common.toast("Bookmark already exists with this URL", "error");
 	} else {
-        formData.append("tags", JSON.stringify(Globals.tags));
+        formData.append("tags", JSON.stringify(IdxGlobals.tags));
         var response = await fetch("/php/add-bookmark.php", {method: "POST", body: formData});
         response = await response.json();
         if (response.Success) {
-            if (Globals.activeBookmarks.length < 1) { Globals.container.classList.remove("empty"); }
-            Globals.activeBookmarks.push(response.BookmarkInfo);
-            Globals.bookmarks.push(response.BookmarkInfo);
-            Globals.container.appendChild(createBookmark(response.BookmarkInfo));
+            if (IdxGlobals.activeBookmarks.length < 1) { IdxGlobals.container.classList.remove("empty"); }
+            IdxGlobals.activeBookmarks.push(response.BookmarkInfo);
+            IdxGlobals.bookmarks.push(response.BookmarkInfo);
+            IdxGlobals.container.appendChild(createBookmark(response.BookmarkInfo));
             Common.toast("Bookmark created", "success");
         } else {
             Common.toast(response.Message, "error");
@@ -371,15 +380,15 @@ async function editBookmark(event) {
 	var formData = new FormData(this),
         bookmarkID = (this.dataset.bkTarget).substring(1);
 
-	if (Globals.bookmarks.some(e => e.PageURL == formData.get("pageURL") && e.BookmarkID != bookmarkID)) {
+	if (IdxGlobals.bookmarks.some(e => e.PageURL == formData.get("pageURL") && e.BookmarkID != bookmarkID)) {
 		Common.toast("Bookmark already exists with this URL", "error");
 	} else {
         formData.append("bookmarkID", bookmarkID);
-        formData.append("tags", JSON.stringify(Globals.tags));
+        formData.append("tags", JSON.stringify(IdxGlobals.tags));
         var response = await fetch("/php/edit-bookmark.php", {method: "POST", body: formData});
         response = await response.json();
         if (response.Success) {
-            Globals.bookmarks[Globals.bookmarks.findIndex(({BookmarkID}) => BookmarkID == bookmarkID)] = response.BookmarkInfo;
+            IdxGlobals.bookmarks[IdxGlobals.bookmarks.findIndex(({BookmarkID}) => BookmarkID == bookmarkID)] = response.BookmarkInfo;
             document.getElementById(`b${response.BookmarkInfo.BookmarkID}`).dataset.href = response.BookmarkInfo.PageURL;
             document.getElementById(`i${response.BookmarkInfo.BookmarkID}`).src = response.BookmarkInfo.ImagePath;
             document.getElementById(`t${response.BookmarkInfo.BookmarkID}`).innerHTML = response.BookmarkInfo.Title;
@@ -405,10 +414,10 @@ function spliceBookmark(arr, bookmarkID) {
 
 function bookmarksEmpty(arr) {
     if (arr.length < 1) {
-        Globals.container.classList.add("empty");
+        IdxGlobals.container.classList.add("empty");
         return true;
     } else {
-        Globals.container.classList.remove("empty");
+        IdxGlobals.container.classList.remove("empty");
         return false;
     }
 }
@@ -425,9 +434,9 @@ async function deleteBookmark(event) {
     response = await response.json();
     if (response.Success) {
         bookmark.remove();
-        spliceBookmark(Globals.bookmarks, bookmarkID);
-        spliceBookmark(Globals.activeBookmarks, bookmarkID);
-        bookmarksEmpty(Globals.activeBookmarks);
+        spliceBookmark(IdxGlobals.bookmarks, bookmarkID);
+        spliceBookmark(IdxGlobals.activeBookmarks, bookmarkID);
+        bookmarksEmpty(IdxGlobals.activeBookmarks);
         Common.toast("Bookmark deleted", "success");
     } else {
         Common.toast(response.Message, "error");
@@ -463,34 +472,108 @@ function searchBookmarks() {
             reTag = new RegExp(!this.dataset.fullWord ? tags : `^${tags}$`, "i"),
             reUnstrict = new RegExp(!this.dataset.fullWord ? unstrict : `^${unstrict}$`, "i");
 
-        filteredBookmarks = Globals.bookmarks.filter(bk => {
+        filteredBookmarks = IdxGlobals.bookmarks.filter(bk => {
             return reTitle.test(bk["Title"]) || reURL.test(bk["PageURL"]) || reTag.test(bk["Tags"]) ||
                 reUnstrict.test(bk["Title"]) || reUnstrict.test(bk["PageURL"]) || reUnstrict.test(bk["Tags"]);
         });
 
-        hideBookmarks(Globals.activeBookmarks);
+        hideBookmarks(IdxGlobals.activeBookmarks);
         showBookmarks(filteredBookmarks);
         bookmarksEmpty(filteredBookmarks);
     } else {
         bookmarksEmpty(filteredBookmarks);
         hideBookmarks(filteredBookmarks);
-        showBookmarks(Globals.activeBookmarks);
+        showBookmarks(IdxGlobals.activeBookmarks);
     }
 }
 
+/******************************* TAGS *******************************/
+function createTag(tagText, tagsCtn) {
+    var tag = `<div class="tag" id="tag-${tagText}">
+                    <div class="tag-text">${tagText}</div>
+                    <span id="tagx-${tagText}" class="tag-x" data-form="${tagsCtn.id.substring(0, tagsCtn.id.indexOf("-"))}">×</span>
+                </div>`;
+    tagsCtn.insertAdjacentHTML("afterbegin", tag);
+
+    var tagX = document.getElementById(`tagx-${tagText}`);
+    tagX.addEventListener("click", function() {
+        let tagBtn = document.getElementById("tag-btn");
+        tagBtn.classList.remove("del");
+        tagBtn.classList.add("add");
+        removeTag(tagText);
+    });
+
+}
+
+function createTags(arr, tagsCtn) {
+    arr.forEach(tagText => { createTag(tagText, tagsCtn); });
+}
+
+function removeTag(tagText) {
+    var tag = document.getElementById(`tag-${tagText}`);
+    tag.remove();
+    IdxGlobals.tags = IdxGlobals.tags.filter(e => e !== tagText);
+}
+
+function hideTags(arr) {
+    arr.forEach(function(e) { document.getElementById(`tag-${e}`).classList.add("hidden"); });
+}
+
+function showTags(arr) {
+    arr.forEach(function(e) { document.getElementById(`tag-${e}`).classList.remove("hidden"); });
+}
+
+function searchTags() {
+    var tagBtn = document.getElementById("tag-btn");
+    if (this.value.length > 0) {
+        var reTag = new RegExp(regexEscape(this.value), "i"),
+            tagsActive = IdxGlobals.tags.filter(e => { return reTag.test(e); });
+        hideTags(IdxGlobals.tags);
+        showTags(tagsActive);
+        if (IdxGlobals.tags.includes(this.value)) {
+            tagBtn.classList.remove("add");
+            tagBtn.classList.add("del");
+        } else {
+            tagBtn.classList.remove("del");
+            tagBtn.classList.add("add");
+        }
+    } else {
+        showTags(IdxGlobals.tags);
+        tagBtn.classList.remove("del", "add");
+    }
+}
+
+function updateTag() {
+    var tagText = document.getElementById("tag-search").value,
+        tagsCtn = document.getElementById("tags");
+    if (this.classList.contains("add")) {
+        IdxGlobals.tags.push(tagText);
+        createTag(tagText, tagsCtn);
+        this.classList.remove("add");
+        this.classList.add("del");
+    } else if (this.classList.contains("del")) {
+        removeTag(tagText);
+        this.classList.remove("del");
+        this.classList.add("add");
+    }
+}
+
+/******************************* SORT *******************************/
 function sortBookmarks() {
-    let sorted = [...Globals.bookmarks];
+    let sorted = [...IdxGlobals.bookmarks];
     switch (this.id) {
-        case Globals.sort: return;
+        case IdxGlobals.sort: return;
         case "title-asc": sorted.sort((a,b) => a.Title.localeCompare(b.Title)); break;
         case "title-desc": sorted.sort((a,b) => b.Title.localeCompare(a.Title)); break;
         case "views-asc": sorted.sort((a,b) => a.Views.localeCompare(b.Views)); break;
         case "views-desc": sorted.sort((a,b) => b.Views.localeCompare(a.Views)); break;
+        case "size-asc": sorted.sort((a,b) => a.ImageSize - b.ImageSize); break;
+        case "size-desc": sorted.sort((a,b) => b.ImageSize - a.ImageSize); break;
         case "created-asc": sorted.sort((a,b) => a.DateCreated.localeCompare(b.DateCreated)); break;
         case "created-desc": sorted.sort((a,b) => b.DateCreated.localeCompare(a.DateCreated)); break;
         case "modified-asc": sorted.sort((a,b) => a.DateModified.localeCompare(b.DateModified)); break;
         case "modified-desc": sorted.sort((a,b) => b.DateModified.localeCompare(a.DateModified)); break;
     }
     sorted.forEach((e, i) => document.getElementById(`b${e.BookmarkID}`).style.order = (i + 1) * 20);
-    Globals.sort = this.id;
+    IdxGlobals.sort = this.id;
 }

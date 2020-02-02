@@ -1,4 +1,8 @@
-var toasts = [];
+var CmnGlobals = {
+    toasts: []
+}
+
+/******************************* GENERAL *******************************/
 /* export function cursorLoad(loading, type) {
     var modal = document.getElementById("loading-modal"),
         body = document.body;
@@ -21,7 +25,11 @@ var toasts = [];
     }
 } */
 
-/******************************* GENERAL *******************************/
+export function getRandomInt(min, max, cur) {
+    var num = Math.floor(Math.random() * (max - min + 1)) + min;
+    return (num === cur) ? getRandomInt(min, max, cur) : num;
+}
+
 export function debounce(fn, delay) {
     var timeout;
     return function(...args) {
@@ -66,13 +74,13 @@ export function toast(message, type) {
         case "warning": toast.classList.add("bg-orange"); break;
     }
 
-	toasts.forEach(t => t.style.bottom = (parseFloat(t.style.bottom) || 0) + t.clientHeight + 8 + 'px');
-	toasts.push(toast);
+	CmnGlobals.toasts.forEach(t => t.style.bottom = (parseFloat(t.style.bottom) || 0) + t.clientHeight + 8 + 'px');
+	CmnGlobals.toasts.push(toast);
 	document.body.appendChild(toast);
 
 	setTimeout(function() {
 		toast.remove();
-		toasts.shift();
+		CmnGlobals.toasts.shift();
     }, 5000);
 }
 
@@ -122,9 +130,14 @@ export function isValid(element) {
             if (element.value.length > 40) { validity.Message = "Username cannot be more than 40 characters"; return validity; }
             break;
         case "password":
+        case "password-new":
             if (element.value.length < 8) { validity.Message = "Password must be a minimum of 8 characters"; return validity; }
             var passConf = document.getElementById(`${element.id}-confirm`);
             if (passConf) { errorCheck.call(passConf); }
+            if (element.id == "pass-new") {
+                var passCur = document.getElementById("pass-cur");
+                if (element.value === passCur.value) { validity.Message = "New password cannot match current password"; return validity; }
+            }
             break;
         case "password-confirm":
             var pass = document.getElementById(element.id.substring(0, element.id.indexOf("-confirm")));
@@ -159,4 +172,25 @@ export function checkErrors(elements) {
     });
     if (errors.includes(false)) { return false; }
     else { return true; }
+}
+
+/******************************* MODAL *******************************/
+export function switchPanel(hiddenPanel, visiblePanel) {
+    hiddenPanel = document.getElementById(hiddenPanel),
+    visiblePanel = document.getElementById(visiblePanel);
+
+    visiblePanel.classList.toggle("hidden-panel");
+    setTimeout(() => {
+        visiblePanel.classList.toggle("hidden");
+        hiddenPanel.classList.toggle("hidden");
+        hiddenPanel.classList.toggle("hidden-panel");
+    }, 150);
+}
+
+export function switchTab(curTab, newTab) {
+    curTab = document.getElementById(curTab),
+    newTab = document.getElementById(newTab);
+
+    curTab.classList.remove("active");
+    newTab.classList.add("active");
 }

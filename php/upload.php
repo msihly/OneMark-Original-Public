@@ -32,8 +32,8 @@ if (isset($_FILES["imageURL"]) && $_FILES["imageURL"]["error"] != 4) {
     $imagePath = "uploads" . "/" . substr($imageHash, 0, 2) . "/" . substr($imageHash, 2, 2) . "/" . $imageHash . "." . $imageExt;
     $imageURL =  "https://" . $bucket . ".s3.us-east-1.amazonaws.com/" . $imagePath;
 
-    if (!in_array($imageExt, $extensions)) { $errors[] = "Extension not allowed: " . $imageName . " | " . $imageType; }
-    if ($imageSize > 2097152) { $errors[] = "Image size exceeds limit: " . $imageName . " | " . $imageSize; }
+    if (!in_array($imageExt, $extensions)) { $errors[] = "Image extension not allowed: " . $imageName . " | " . $imageType; }
+    if ($imageSize > 2097152) { $errors[] = "Image size exceeds limit: " . $imageName . " | " . $imageSize . " bytes"; }
     if (empty($errors)) {
         $dupeCheck = imageExists($imageHash);
         if ($dupeCheck) {
@@ -43,8 +43,8 @@ if (isset($_FILES["imageURL"]) && $_FILES["imageURL"]["error"] != 4) {
             //move_uploaded_file($imageTmp, $imagePath);
             try {
                 $result = $s3->upload($bucket, $imagePath, fopen($imageTmp, "rb"), "public-read");
-                $imageID = uploadImage($imageURL, $imageHash);
-                return ["Success" => true, "ImageID" => $imageID, "ImagePath" => $imageURL];
+                $imageID = uploadImage($imageURL, $imageHash, $imageSize);
+                return ["Success" => true, "ImageID" => $imageID, "ImagePath" => $imageURL, "ImageSize" => $imageSize];
             } catch (Aws\S3\Exception\S3Exception $e) {
                 logToFile($e->getMessage(), "e");
                 return ["Success" => false, "Errors" => ["Image server misconfiguartion"]];

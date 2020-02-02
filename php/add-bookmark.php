@@ -22,6 +22,7 @@ try {
             if ($response["Success"]) {
                 $imageID = $response["ImageID"];
                 $imagePath = $response["ImagePath"];
+                $imageSize = $response["ImageSize"];
             } else {
                 echo json_encode(["Success" => false, "Message" => $response["Errors"]]);
                 exit();
@@ -32,7 +33,7 @@ try {
 
             foreach($tags as $tag) { addTag($bookmarkID, $tag); }
 
-            echo json_encode(["Success" => true, "BookmarkInfo" => ["BookmarkID" => $bookmarkID, "Title" => $title, "PageURL" => $pageURL,  "ImagePath" => $imagePath, "DateCreated" => $date, "DateModified" => $date, "Tags" => $tags]]);
+            echo json_encode(["Success" => true, "BookmarkInfo" => ["BookmarkID" => $bookmarkID, "Title" => $title, "PageURL" => $pageURL,  "ImagePath" => $imagePath, "ImageSize" => $imageSize, "DateCreated" => $date, "DateModified" => $date, "Views" => 0, "Tags" => $tags]]);
         }
     } else {
         echo json_encode(["Success" => false, "Message" => "User not signed in"]);

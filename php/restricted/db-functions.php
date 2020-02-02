@@ -27,15 +27,16 @@ function imageExists(string $imageHash) {
     return empty($result) ? false : $result[0];
 }
 
-function uploadImage(string $imagePath, string $imageHash) {
+function uploadImage(string $imagePath, string $imageHash, int $imageSize) {
     GLOBAL $conn;
     $dateCreated = date("Y-m-d H:i:s");
 
-    $query = "INSERT INTO Images (ImagePath, ImageHash, DateCreated)
-                VALUES (:imagePath, :imageHash, :dateCreated);";
+    $query = "INSERT INTO Images (ImagePath, ImageHash, ImageSize, DateCreated)
+                VALUES (:imagePath, :imageHash, :imageSize, :dateCreated);";
     $stmt = $conn->prepare($query);
     $stmt->bindParam(":imagePath", $imagePath);
     $stmt->bindParam(":imageHash", $imageHash);
+    $stmt->bindParam(":imageSize", $imageSize);
     $stmt->bindParam(":dateCreated", $dateCreated);
     $stmt->execute();
 
@@ -210,7 +211,7 @@ function deleteBookmark(int $bookmarkID) {
 
 function getBookmark(int $bookmarkID) {
     GLOBAL $conn;
-    $query = "SELECT      b.Title, b.PageURL, b.ImageID, i.ImagePath, b.DateCreated, b.DateModified, b.Views
+    $query = "SELECT      b.Title, b.PageURL, b.ImageID, i.ImagePath, i.ImageSize, b.DateCreated, b.DateModified, b.Views
               FROM        Bookmark AS b INNER JOIN Images AS i
                               ON b.ImageID = i.ImageID
               WHERE       b.BookmarkID = :bookmarkID;";
@@ -224,7 +225,7 @@ function getBookmark(int $bookmarkID) {
 
 function getAllBookmarks(int $userID) {
     GLOBAL $conn;
-    $query = "SELECT      b.BookmarkID, b.Title, b.PageURL, i.ImagePath, b.DateCreated, b.DateModified, b.Views
+    $query = "SELECT      b.BookmarkID, b.Title, b.PageURL, i.ImagePath, i.ImageSize, b.DateCreated, b.DateModified, b.Views
               FROM        Bookmark AS b INNER JOIN Images AS i
                               ON b.ImageID = i.ImageID
               WHERE       b.UserID = :userID;";
@@ -319,7 +320,7 @@ function getUser(string $username) {
 
 function getUserInfo(int $userID) {
     GLOBAL $conn;
-    $query = "SELECT      l.Username, u.Email, u.Verified, u.DateCreated
+    $query = "SELECT      l.Username, u.Email, u.DateCreated, u.Verified, u.AccessLevel
               FROM        Logins AS l INNER JOIN User AS u
                               ON l.UserID = u.UserID
               WHERE       u.UserID = :userID;";
@@ -342,6 +343,30 @@ function getLoginInfo(string $username) {
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     return empty($result) ? false : $result[0];
+}
+
+function getPass(int $userID) {
+    GLOBAL $conn;
+    $query = "SELECT      l.PasswordHash
+              FROM        Logins l
+              WHERE       l.UserID = :userID;";
+    $stmt = $conn->prepare($query);
+    $stmt->bindParam(":userID", $userID);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    return empty($result) ? false : $result[0]["PasswordHash"];
+}
+
+function updatePass(int $userID, string $passwordHash) {
+    GLOBAL $conn;
+    $query = "UPDATE      Logins AS l
+              SET         l.PasswordHash = :passwordHash
+              WHERE       l.UserID = :userID;";
+    $stmt = $conn->prepare($query);
+    $stmt->bindParam(":userID", $userID);
+    $stmt->bindParam(":passwordHash", $passwordHash);
+    $stmt->execute();
 }
 
 function register(string $email, string $username, string $password) {
