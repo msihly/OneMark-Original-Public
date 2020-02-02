@@ -228,7 +228,8 @@ function getAllBookmarks(int $userID) {
     $query = "SELECT      b.BookmarkID, b.Title, b.PageURL, i.ImagePath, i.ImageSize, b.DateCreated, b.DateModified, b.Views
               FROM        Bookmark AS b INNER JOIN Images AS i
                               ON b.ImageID = i.ImageID
-              WHERE       b.UserID = :userID;";
+              WHERE       b.UserID = :userID
+              ORDER BY    b.DateModified DESC";
 
     $stmt = $conn->prepare($query);
     $stmt->bindParam(":userID", $userID);

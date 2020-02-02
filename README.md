@@ -14,6 +14,14 @@
 ---
 # Changelog
 *The version histories below do not account for all changes made as documentation is written from the To-Do-List in the following major section and from memory prior to each commit. Additionally, minor changes are typically not recorded in the changelog or in the To-Do-List. Analysis of the differences on GitHub can be used to identify undocumented changes when necessary.*
+## Version 0.70 &nbsp;-&nbsp; (2020-02-02)
+* Hotfix of critical errors in `modalClose()` function
+* Converted fat-arrow notation for anonymous functions requiring an `event` or `this` reference back to original notation
+* Updated sort-menu buttons
+    * Order changed to reflect most likely desired sorting attributes in descending order
+    * Changed default query sort in `getAllBookmarks()` function in `db-functions.php` to *'DateModified'* descending
+    * Added indicator of currently selected sort
+
 ## Version 0.69 &nbsp;-&nbsp; (2020-02-02)
 * Added *'Image Size'* sort option
     * Added `ImageSize` column to `Images` db-table
@@ -195,6 +203,7 @@
 * Custom error pages - 403, 404 (open book with pages torn out)
 
 ## Medium Priority:
+* Add password reveal buttons to password input fields
 * Expand `searchBookmarks()` features
     * Add "-" prefix to exclude term from results
     * Add "has:" prefix with "image" and "tags" as parameter options

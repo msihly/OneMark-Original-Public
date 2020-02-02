@@ -4,7 +4,7 @@ const eventListeners = [
     {
         "id": "create-bookmark",
         "eventType": "click",
-        "function": (event) => {modalBookmark(event, "upload");}
+        "function": function(event) {modalBookmark(event, "upload");}
     }, {
         "id": "sortmenu",
         "eventType": "click",
@@ -38,7 +38,7 @@ const eventListeners = [
     }, {
         "id": "preview",
         "eventType": "click",
-        "function": (event) => {openBookmark(event, true);}
+        "function": function(event) {openBookmark(event, true);}
     }, {
         "id": "image-upload",
         "eventType": "change",
@@ -70,7 +70,7 @@ const eventListeners = [
     }, {
         "dataListener": "acc-btn",
         "eventType": "click",
-        "function": (event) => {
+        "function": function(event) {
             Common.switchPanel(IdxGlobals.accCurPanel, event.target.dataset.panel);
             IdxGlobals.accCurPanel = event.target.dataset.panel;
             Common.switchTab(IdxGlobals.accCurTab, event.target.id);
@@ -85,7 +85,7 @@ const eventListeners = [
 
 var IdxGlobals = {
     container: "",
-    sort: "",
+    sort: "modified-desc",
     accCurTab: "acc-tab-info",
     accCurPanel: "acc-panel-info",
     bookmarks: [],
@@ -231,13 +231,14 @@ function modalBookmark(event, formType) {
 	modal.classList.remove("hidden");
 }
 
-function modalClose(event, del = false) {
-	var modal = document.getElementById(this.dataset.modal);
-	if (event.target == modal|| this.classList.contains("close")) { del ? modal.remove() : modal.classList.add("hidden"); }
+function modalClose(e, del = false) {
+    e.stopPropagation();
+	var modal = document.getElementById(e.target.dataset.modal);
+	if (e.target == modal|| e.target.classList.contains("close")) { del ? modal.remove() : modal.classList.add("hidden"); }
 }
 
 /******************************* ALERTS *******************************/
-function createAlert({text = "", buttons = [{"btnText": "Close", "fn": (event) => {modalClose(event, true)}, "class": "close"}]} = {}) {
+function createAlert({text = "", buttons = [{"btnText": "Close", "fn": function(event) {modalClose(event, true)}, "class": "close"}]} = {}) {
     event.stopPropagation();
     var htmlButtons = "",
         randID = Math.floor(Math.random() * 100);
@@ -250,7 +251,7 @@ function createAlert({text = "", buttons = [{"btnText": "Close", "fn": (event) =
                     </div>`;
     var frag = document.createRange().createContextualFragment(htmlModal);
     frag.querySelectorAll("button").forEach((e, i) => e.addEventListener("click", buttons[i].fn));
-    frag.getElementById(`al-${randID}`).addEventListener("click", (event) => {modalClose(event, true)});
+    frag.getElementById(`al-${randID}`).addEventListener("click", function(event) {modalClose(event, true)});
 
     closeMenus();
     return frag;
@@ -563,17 +564,19 @@ function sortBookmarks() {
     let sorted = [...IdxGlobals.bookmarks];
     switch (this.id) {
         case IdxGlobals.sort: return;
-        case "title-asc": sorted.sort((a,b) => a.Title.localeCompare(b.Title)); break;
-        case "title-desc": sorted.sort((a,b) => b.Title.localeCompare(a.Title)); break;
-        case "views-asc": sorted.sort((a,b) => a.Views.localeCompare(b.Views)); break;
-        case "views-desc": sorted.sort((a,b) => b.Views.localeCompare(a.Views)); break;
-        case "size-asc": sorted.sort((a,b) => a.ImageSize - b.ImageSize); break;
-        case "size-desc": sorted.sort((a,b) => b.ImageSize - a.ImageSize); break;
-        case "created-asc": sorted.sort((a,b) => a.DateCreated.localeCompare(b.DateCreated)); break;
-        case "created-desc": sorted.sort((a,b) => b.DateCreated.localeCompare(a.DateCreated)); break;
-        case "modified-asc": sorted.sort((a,b) => a.DateModified.localeCompare(b.DateModified)); break;
         case "modified-desc": sorted.sort((a,b) => b.DateModified.localeCompare(a.DateModified)); break;
+        case "modified-asc": sorted.sort((a,b) => a.DateModified.localeCompare(b.DateModified)); break;
+        case "created-desc": sorted.sort((a,b) => b.DateCreated.localeCompare(a.DateCreated)); break;
+        case "created-asc": sorted.sort((a,b) => a.DateCreated.localeCompare(b.DateCreated)); break;
+        case "title-desc": sorted.sort((a,b) => b.Title.localeCompare(a.Title)); break;
+        case "title-asc": sorted.sort((a,b) => a.Title.localeCompare(b.Title)); break;
+        case "views-desc": sorted.sort((a,b) => b.Views.localeCompare(a.Views)); break;
+        case "views-asc": sorted.sort((a,b) => a.Views.localeCompare(b.Views)); break;
+        case "size-desc": sorted.sort((a,b) => b.ImageSize - a.ImageSize); break;
+        case "size-asc": sorted.sort((a,b) => a.ImageSize - b.ImageSize); break;
     }
     sorted.forEach((e, i) => document.getElementById(`b${e.BookmarkID}`).style.order = (i + 1) * 20);
+    document.getElementById(IdxGlobals.sort).classList.remove("active");
+    this.classList.add("active");
     IdxGlobals.sort = this.id;
 }

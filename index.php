@@ -35,16 +35,16 @@
             <div class="nav-menu sort">
                 <div class="nav-btn" id="sortmenu" data-menu="sortmenu-content"></div>
                 <div class="hidden" id="sortmenu-content">
-                    <div class="sortmenu-btn asc" id="title-asc" data-text="Title"></div>
-                    <div class="sortmenu-btn desc" id="title-desc" data-text="Title"></div>
-                    <div class="sortmenu-btn asc" id="views-asc" data-text="Views"></div>
-                    <div class="sortmenu-btn desc" id="views-desc" data-text="Views"></div>
-                    <div class="sortmenu-btn asc" id="size-asc" data-text="Image Size"></div>
-                    <div class="sortmenu-btn desc" id="size-desc" data-text="Image Size"></div>
-                    <div class="sortmenu-btn asc" id="created-asc" data-text="Date Created"></div>
-                    <div class="sortmenu-btn desc" id="created-desc" data-text="Date Created"></div>
+                    <div class="sortmenu-btn desc active" id="modified-desc" data-text="Date Modified"></div>
                     <div class="sortmenu-btn asc" id="modified-asc" data-text="Date Modified"></div>
-                    <div class="sortmenu-btn desc" id="modified-desc" data-text="Date Modified"></div>
+                    <div class="sortmenu-btn desc" id="created-desc" data-text="Date Created"></div>
+                    <div class="sortmenu-btn asc" id="created-asc" data-text="Date Created"></div>
+                    <div class="sortmenu-btn desc" id="title-desc" data-text="Title"></div>
+                    <div class="sortmenu-btn asc" id="title-asc" data-text="Title"></div>
+                    <div class="sortmenu-btn desc" id="views-desc" data-text="Views"></div>
+                    <div class="sortmenu-btn asc" id="views-asc" data-text="Views"></div>
+                    <div class="sortmenu-btn desc" id="size-desc" data-text="Image Size"></div>
+                    <div class="sortmenu-btn asc" id="size-asc" data-text="Image Size"></div>
                 </div>
             </div>
             <div class="nav-menu">
