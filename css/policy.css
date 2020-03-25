@@ -1,0 +1,83 @@
+/********************* VARIABLES *********************/
+
+:root {
+    --blue-light: rgb(0, 115, 190);
+}
+
+/********************* FONTS *********************/
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 400;
+    src: url("fonts/roboto-400.woff2") format("woff2"),
+         url("fonts/roboto-400.woff") format("woff");
+}
+
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 500;
+    src: url("fonts/roboto-500.woff2") format("woff2"),
+         url("fonts/roboto-500.woff") format("woff");
+}
+
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 700;
+    src: url("fonts/roboto-700.woff2") format("woff2"),
+         url("fonts/roboto-700.woff") format("woff");
+}
+
+html, body {
+    background-color: rgb(255, 255, 255);
+    font-size: 16px;
+    font-family: "Roboto", "Open Sans", sans-serif;
+}
+
+a {
+    color: var(--blue-light);
+    text-decoration: none;
+}
+
+ul > li {
+    list-style-type: disc;
+}
+
+p, ul > li {
+    line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0.35em 0;
+}
+
+h4 {
+    font-size: 1.2em;
+}
+
+.container {
+    padding: 0.75rem;
+}
+
+.title {
+    text-align: center;
+}
+
+.table-of-contents {
+    font-weight: 600;
+    font-size: 1.1em;
+}
+
+.table-of-contents > li {
+    margin: 0.25em 0;
+    text-transform: uppercase;
+}
+
+.header {
+    text-transform: uppercase;
+}
+
+.summary {
+    font-style: italic;
+}

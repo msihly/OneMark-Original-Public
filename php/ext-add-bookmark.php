@@ -3,8 +3,15 @@ require_once("restricted/db-functions.php");
 include_once("restricted/logging.php");
 
 try {
-    if (isset($_SESSION["uid"])) {
-        $userID = $_SESSION["uid"];
+    $headers = apache_request_headers();
+    if (isset($headers["Authorization"])) {
+        $authHeader = explode(" ", $headers["Authorization"]);
+        $userID = validateToken($authHeader[1]);
+        if (!$userID) {
+            echo json_encode(["Success" => false, "Message" => "Invalid authentication"]);
+            exit();
+        }
+
         $title = $_POST["title"];
         $pageURL = $_POST["pageURL"];
         $tags = json_decode($_POST["tags"]);
@@ -18,6 +25,11 @@ try {
         } else if (!filter_var($pageURL, FILTER_VALIDATE_URL)) {
             echo json_encode(["Success" => false, "Message" => "Invalid page URL"]);
         } else {
+            if (bookmarkExists($userID, $pageURL) !== false) {
+                echo json_encode(["Success" => false, "Message" => "Bookmark already exists"]);
+                exit();
+            }
+
             $response = include("upload.php");
             if ($response["Success"]) {
                 $imageID = $response["ImageID"];

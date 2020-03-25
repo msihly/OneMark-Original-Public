@@ -9,6 +9,6 @@ function logToFile($message, string $type = "info", int $line = null, string $lo
         case "d": case "debug": $type = "DEBUG"; break;
         default: $type = "INFO"; break;
     }
-    error_log(date("[Y-m-d H:i:s]") . " [$type] [" . basename($trace["file"]) . " : " . (isset($line) ? $line : $trace["line"]) . "] " . print_r($message, TRUE) . "\n", 3, "restricted/logs/" . $logFile . ".log");
+    error_log(date("[Y-m-d H:i:s]") . " [$type] [" . basename($trace["file"]) . " : " . (isset($line) ? $line : $trace["line"]) . "] " . print_r($message, TRUE) . "\n", 3, dirname(__FILE__) . "/logs/" . $logFile . ".log");
 }
 ?>

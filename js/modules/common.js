@@ -84,24 +84,33 @@ export function toast(message, type) {
     }, 5000);
 }
 
-export function insertInlineMessage(position, parentNode, refNode, text, type) {
-    var tempID = (`${parentNode}-${refNode}`).replace(/[#.]/g, ""),
-        [parentNode, refNode, prevNode] = document.querySelectorAll(`${parentNode}, ${refNode}, #${tempID}`),
+export function insertInlineMessage(position, refNode, text, options = [{"type": "", "duration": 0}]) {
+    var refNode = document.getElementById(refNode),
+        parentNode = refNode.parentElement,
+        tempID = (`${parentNode.id}-${refNode.id}`).replace(/[#.]/g, ""),
+        prevNode = document.getElementById(tempID),
         msgNode = document.createElement("div");
 
     msgNode.classList.add("inline-message");
     msgNode.innerHTML = text;
     msgNode.id = tempID;
+
     if (prevNode) { prevNode.remove(); }
-    switch (type) {
+
+    switch (options.type) {
+        case "info": msgNode.classList.add("bg-blue"); break;
         case "success": msgNode.classList.add("bg-green"); break;
         case "error": msgNode.classList.add("bg-red"); break;
         case "warning": msgNode.classList.add("bg-orange"); break;
     }
 
     switch (position) {
-        case "before": return parentNode.insertBefore(msgNode, refNode);
-        case "after": return parentNode.insertBefore(msgNode, refNode.nextSibling);
+        case "before": parentNode.insertBefore(msgNode, refNode); break;
+        case "after": parentNode.insertBefore(msgNode, refNode.nextSibling); break;
+    }
+
+    if (options.duration > 0) {
+        setTimeout(() => msgNode.remove(), options.duration);
     }
 }
 
@@ -114,11 +123,11 @@ export function isValid(element) {
     }
     switch (element.name) {
         case "title":
-            if (element.value.length > 100) { validity.Message = "Title cannot be more than 100 characters"; return validity; }
+            if (element.value.length > 255) { validity.Message = "Title cannot be more than 255 characters"; return validity; }
             break;
         case "pageURL":
-            var re = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
-            if (element.value.length > 255) { validity.Message = "Page URL cannot be more than 255 characters"; return validity; }
+            var re = /^[A-Za-z][A-Za-z\d.+-]*:\/*(?:\w+(?::\w+)?@)?[^\s/]+(?::\d+)?(?:\/[\w#!:.?+=&%@\-/]*)?$/;
+            if (element.value.length > 2083) { validity.Message = "Page URL cannot be more than 2083 characters"; return validity; }
             else if (!re.test(element.value)) { validity.Message = "Invalid URL"; return validity; }
             break;
         case "email":
@@ -184,7 +193,7 @@ export function switchPanel(hiddenPanel, visiblePanel) {
         visiblePanel.classList.toggle("hidden");
         hiddenPanel.classList.toggle("hidden");
         hiddenPanel.classList.toggle("hidden-panel");
-    }, 150);
+    }, 200);
 }
 
 export function switchTab(curTab, newTab) {

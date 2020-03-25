@@ -209,6 +209,20 @@ function deleteBookmark(int $bookmarkID) {
     $stmt->execute();
 }
 
+function bookmarkExists(int $userID, string $pageURL) {
+    GLOBAL $conn;
+    $query = "SELECT      b.BookmarkID
+              FROM        Bookmark AS b
+              WHERE       b.UserID = :userID AND b.PageURL = :pageURL;";
+    $stmt = $conn->prepare($query);
+    $stmt->bindParam(":userID", $userID);
+    $stmt->bindParam(":pageURL", $pageURL);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    return empty($result) ? false : $result[0];
+}
+
 function getBookmark(int $bookmarkID) {
     GLOBAL $conn;
     $query = "SELECT      b.Title, b.PageURL, b.ImageID, i.ImagePath, i.ImageSize, b.DateCreated, b.DateModified, b.Views

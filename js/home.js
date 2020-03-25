@@ -85,6 +85,8 @@ const eventListeners = [
 
 var IdxGlobals = {
     container: "",
+    tagSearch: "",
+    tagsCtn: "",
     sort: "modified-desc",
     accCurTab: "acc-tab-info",
     accCurPanel: "acc-panel-info",
@@ -109,6 +111,8 @@ window.addEventListener("DOMContentLoaded", async function() {
     IdxGlobals.activeBookmarks = [...IdxGlobals.bookmarks];
     Common.addListeners(eventListeners);
     IdxGlobals.container = document.getElementById("bookmark-container");
+    IdxGlobals.tagSearch = document.getElementById("tag-search");
+    IdxGlobals.tagsCtn = document.getElementById("tags");
     if (!bookmarksEmpty(IdxGlobals.activeBookmarks)) { createBookmarks(IdxGlobals.container, IdxGlobals.activeBookmarks); }
 });
 
@@ -145,8 +149,7 @@ function toggleMenu() {
 /******************************* ACCOUNT *******************************/
 async function logout(event) {
     event.preventDefault();
-    var response = await fetch("/php/logout.php");
-    response = await response.json();
+    var response = await (await fetch("/php/logout.php")).json();
     if (response.Success) {
         Common.toast(response.Message, "success");
         setTimeout(function() { window.location.href = "/login.php"; }, 1000);
@@ -160,17 +163,15 @@ async function updatePassword(event) {
     if (!Common.checkErrors([...this.elements])) { return Common.toast("Errors in form fields", "error"); }
 
     var formData = new FormData(this),
-        response = await fetch("/php/update-pass.php", {method: "POST", body: formData});
+        response = await (await fetch("/php/update-pass.php", {method: "POST", body: formData})).json();
 
-    response = await response.json();
     response.Success ? Common.toast(response.Message, "success") : Common.toast(response.Message, "error");
 }
 
 /******************************* MODAL *******************************/
 async function modalAccount() {
     var [modal, username, email, dateCreated, accType] = document.querySelectorAll("#acc-modal, #acc-username, #acc-email, #acc-created, #acc-type");
-    let response = await fetch("/php/account-info.php");
-    response = await response.json();
+    let response = await (await fetch("/php/account-info.php")).json();
 
     if (!response.Success) { return Common.toast(response.Message, "error"); }
     username.innerHTML = response.Info.Username;
@@ -292,6 +293,18 @@ function removeUpload() {
 }
 
 /******************************* BOOKMARKS *******************************/
+function getBookmarkInfo(bookmarkID) {
+    let bk = IdxGlobals.bookmarks[IdxGlobals.bookmarks.findIndex(({BookmarkID}) => BookmarkID == bookmarkID)];
+    return `<b>Date Created</b>
+            ${bk.DateCreated}
+            <b>Date Modified</b>
+            ${bk.DateModified}
+            <b>Image Size</b>
+            ${formatBytes(bk.ImageSize)}
+            <b>View Count</b>
+            ${bk.Views}`;
+}
+
 function createBookmark(bkInfo) {
     var html = `<div class="bookmark" id="b${bkInfo.BookmarkID}" data-href="${bkInfo.PageURL}">
                     <div class="title" id="t${bkInfo.BookmarkID}">${bkInfo.Title}</div>
@@ -305,18 +318,11 @@ function createBookmark(bkInfo) {
                         <div class="menu-toggle" id="m-t${bkInfo.BookmarkID}" data-menu="m${bkInfo.BookmarkID}"></div>
                     </div>
                 </div>`;
-    var infoText = `<b>Date Created</b>
-                     ${bkInfo.DateCreated}
-                     <b>Date Modified</b>
-                     ${bkInfo.DateModified}
-                     <b>Image Size</b>
-                     ${formatBytes(bkInfo.ImageSize)}
-                     <b>View Count</b>
-                     ${bkInfo.Views}`;
+
     var frag = document.createRange().createContextualFragment(html);
     frag.querySelector(`#b${bkInfo.BookmarkID}`).addEventListener("click", openBookmark);
     frag.querySelector(`#m-t${bkInfo.BookmarkID}`).addEventListener("click", toggleMenu);
-    frag.querySelector(`#mc-i${bkInfo.BookmarkID}`).addEventListener("click", () => document.body.appendChild(createAlert({"text": infoText})));
+    frag.querySelector(`#mc-i${bkInfo.BookmarkID}`).addEventListener("click", () => document.body.appendChild(createAlert({"text": getBookmarkInfo(bkInfo.BookmarkID)})));
     frag.querySelector(`#mc-e${bkInfo.BookmarkID}`).addEventListener("click", function(event) { modalBookmark(event, "edit"); });
     frag.querySelector(`#mc-d${bkInfo.BookmarkID}`).addEventListener("click", deleteBookmark);
     LazyObserver.observe(frag.querySelector(`#i${bkInfo.BookmarkID}`));
@@ -344,8 +350,7 @@ function openBookmark(event, preview = false) {
 }
 
 async function getBookmarks() {
-    let response = await fetch("/php/get-bookmarks.php");
-    response = await response.json();
+    let response = await (await fetch("/php/get-bookmarks.php")).json();
     if (!response.Success) { Common.toast("Error getting bookmarks", "error"); }
     return response.Bookmarks;
 }
@@ -360,8 +365,7 @@ async function uploadBookmark(event) {
 		Common.toast("Bookmark already exists with this URL", "error");
 	} else {
         formData.append("tags", JSON.stringify(IdxGlobals.tags));
-        var response = await fetch("/php/add-bookmark.php", {method: "POST", body: formData});
-        response = await response.json();
+        var response = await (await fetch("/php/add-bookmark.php", {method: "POST", body: formData})).json();
         if (response.Success) {
             if (IdxGlobals.activeBookmarks.length < 1) { IdxGlobals.container.classList.remove("empty"); }
             IdxGlobals.activeBookmarks.push(response.BookmarkInfo);
@@ -386,8 +390,7 @@ async function editBookmark(event) {
 	} else {
         formData.append("bookmarkID", bookmarkID);
         formData.append("tags", JSON.stringify(IdxGlobals.tags));
-        var response = await fetch("/php/edit-bookmark.php", {method: "POST", body: formData});
-        response = await response.json();
+        var response = await (await fetch("/php/edit-bookmark.php", {method: "POST", body: formData})).json();
         if (response.Success) {
             IdxGlobals.bookmarks[IdxGlobals.bookmarks.findIndex(({BookmarkID}) => BookmarkID == bookmarkID)] = response.BookmarkInfo;
             document.getElementById(`b${response.BookmarkInfo.BookmarkID}`).dataset.href = response.BookmarkInfo.PageURL;
@@ -431,8 +434,7 @@ async function deleteBookmark(event) {
 
 	formData.append("bookmarkID", bookmarkID);
 
-    var response = await fetch("/php/delete-bookmark.php", {method: "POST", body: formData});
-    response = await response.json();
+    var response = await (await fetch("/php/delete-bookmark.php", {method: "POST", body: formData})).json();
     if (response.Success) {
         bookmark.remove();
         spliceBookmark(IdxGlobals.bookmarks, bookmarkID);
@@ -454,6 +456,7 @@ function showBookmarks(arr) {
 }
 
 function searchBookmarks() {
+    var filteredBookmarks = [];
     if (this.value.length > 0) {
         var terms = regexEscape(this.value.trim()).split(" "),
             titles = terms.filter(term => term.match(/(?<=(title|caption|label):)[^\s]*/gi)) || [],
@@ -482,8 +485,8 @@ function searchBookmarks() {
         showBookmarks(filteredBookmarks);
         bookmarksEmpty(filteredBookmarks);
     } else {
-        bookmarksEmpty(filteredBookmarks);
         hideBookmarks(filteredBookmarks);
+        bookmarksEmpty(IdxGlobals.activeBookmarks);
         showBookmarks(IdxGlobals.activeBookmarks);
     }
 }
@@ -492,7 +495,7 @@ function searchBookmarks() {
 function createTag(tagText, tagsCtn) {
     var tag = `<div class="tag" id="tag-${tagText}">
                     <div class="tag-text">${tagText}</div>
-                    <span id="tagx-${tagText}" class="tag-x" data-form="${tagsCtn.id.substring(0, tagsCtn.id.indexOf("-"))}">×</span>
+                    <span id="tagx-${tagText}" class="tag-x" data-form="${tagsCtn.id.substring(0, tagsCtn.id.indexOf("-"))}">\u00D7</span>
                 </div>`;
     tagsCtn.insertAdjacentHTML("afterbegin", tag);
 
@@ -545,17 +548,17 @@ function searchTags() {
 }
 
 function updateTag() {
-    var tagText = document.getElementById("tag-search").value,
-        tagsCtn = document.getElementById("tags");
+    var input = IdxGlobals.tagSearch,
+        tagText = input.value;
     if (this.classList.contains("add")) {
         IdxGlobals.tags.push(tagText);
-        createTag(tagText, tagsCtn);
+        createTag(tagText, IdxGlobals.tagsCtn);
+        input.value = "";
         this.classList.remove("add");
-        this.classList.add("del");
     } else if (this.classList.contains("del")) {
         removeTag(tagText);
+        input.value = "";
         this.classList.remove("del");
-        this.classList.add("add");
     }
 }
 

@@ -1,16 +1,23 @@
 /********************* VARIABLES *********************/
 :root {
-    --theme-color: rgb(0, 115, 190);
+    --theme-color: var(--blue-light);
     --theme-image-panel: url("../images/panel-white-mountain.jpg");
     --theme-image-wrapper: url("../images/purple-mountain.jpg");
-    --green: rgb(70, 190, 70);
+    --black-med: rgb(30, 30, 30);
     --blue-med: rgb(20, 90, 170);
     --blue-light: rgb(0, 115, 190);
-    --red: rgb(185, 50, 50);
-    --red-light: rgb(205, 70, 70);
+    --green-light: rgb(70, 190, 70);
+    --green-med: rgb(10, 130, 10);;
     --orange-light: rgb(210, 130, 0);
     --orange-med: rgb(200, 110, 0);
     --orange-dark: rgb(200, 75, 0);
+    --purple-dark: rgb(90, 15, 90);
+    --red-light: rgb(205, 70, 70);
+    --red-med: rgb(185, 50, 50);
+    --red-med-2: rgb(160, 15, 15);
+    --red-dark: rgb(130, 10, 10);
+    --white-light: #dfdfdf;
+    --white-med: #E8E8E8;
     --yellow: rgb(215, 190, 0);
 }
 
@@ -62,7 +69,7 @@
 
 /********************* GENERAL *********************/
 :focus {
-	outline-color: #dfdfdf;
+	outline-color: var(--white-light);
 }
 
 html, body {
@@ -84,7 +91,7 @@ h4, h5, h6 {
 }
 
 p, span {
-	color: #dfdfdf;
+	color: var(--white-light);
 }
 
 p {
@@ -104,7 +111,7 @@ button {
 	margin: 0.4rem 0.3rem;
     border: none;
     border-radius: 3px;
-    font-size: 1rem;
+    font-size: 1em;
     font-family: "Roboto";
     background-color: var(--blue-med);
 	color: #fff;
@@ -211,7 +218,7 @@ nav {
 	justify-content: space-between;
 	margin: 0;
 	padding: 0.5rem 0;
-    background-color: #131313;
+    background-color: #111;
     box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.25);
     z-index: 5;
 }
@@ -224,12 +231,13 @@ nav {
     border-radius: 30px;
     font-size: 1rem;
     text-overflow: ellipsis;
-    color: #dfdfdf;
+    color: var(--white-light);
     background-color: #222;
 }
 
-#searchbar::-webkit-input-placeholder {
+.placeholder::-webkit-input-placeholder {
     opacity: 1;
+    font-size: 1em;
 }
 
 .nav-menu {
@@ -245,7 +253,7 @@ nav {
 	font-size: 1.2rem;
     font-weight: 500;
     cursor: pointer;
-    color: #dfdfdf;
+    color: var(--white-light);
     transition: 0.1s all ease-in-out;
 }
 
@@ -324,7 +332,7 @@ nav {
     margin: 0.2em 0.3em 0.4em 0.3em;
     padding: 5px;
     background: none;
-    border: solid #dfdfdf;
+    border: solid var(--white-light);
     border-width: 0 3px 3px 0;
     box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.3);
     cursor: pointer;
@@ -341,11 +349,13 @@ nav {
     flex-direction: column;
     top: 52px;
     right: 0;
-    font-size: 1rem;
+    max-height: 80vh;
+    font-size: 1em;
     font-weight: 500;
-    color: #dfdfdf;
+    color: var(--white-light);
     background-color: rgba(19, 19, 19, 0.85);
     box-shadow: -2px 2px 8px 0 rgba(0, 0, 0, 0.3);
+    overflow: auto;
     z-index: 5;
 }
 
@@ -421,12 +431,20 @@ input[type="button"], input[type="submit"] {
 
 .file-input-btn {
     display: inline-block;
-    font-size: 18px;
+    font-size: 1em;
     border: 2px solid #000;
 	background: none;
     color: #000;
     white-space: nowrap;
     transition: 0.2s all;
+}
+
+.file-input-btn::after {
+    content: "Upload Image";
+}
+
+.file-input-btn.del::after {
+    content: "Remove Image";
 }
 
 .file-input-name {
@@ -455,8 +473,8 @@ input[type="button"], input[type="submit"] {
 }
 
 .file-input-btn.del:hover {
-    background-color: var(--red);
-    border-color: var(--red);
+    background-color: var(--red-med);
+    border-color: var(--red-med);
 }
 
 .file-input-icon {
@@ -535,7 +553,7 @@ input:placeholder-shown:hover {
 
 input:not(:placeholder-shown), input:focus, input:focus:hover {
     color: #000;
-    border-color: rgb(10, 130, 10);
+    border-color: var(--green-med);
     outline: none;
 }
 
@@ -561,15 +579,15 @@ input:not(:placeholder-shown) + label.lb-title, input:focus + label.lb-title {
 }
 
 input:placeholder-shown.invalid, input:not(:placeholder-shown).invalid, input:focus.invalid, input:focus:hover.invalid {
-    border-color: var(--red);
+    border-color: var(--red-med);
 }
 
 input:placeholder-shown.invalid + label.lb-title, input:not(:placeholder-shown).invalid + label.lb-title, input:focus.invalid + label.lb-title {
-    color: var(--red);
+    color: var(--red-med);
 }
 
 input:placeholder-shown.invalid + label.lb-title:hover {
-    color: rgb(130, 10, 10);
+    color: var(--red-dark);
 }
 
 .form-group {
@@ -599,7 +617,7 @@ input:placeholder-shown.invalid + label.lb-title:hover {
 .error-label {
     font-size: 0.7rem;
     font-weight: 500;
-    color: var(--red);
+    color: var(--red-med);
 }
 
 ::-webkit-input-placeholder {
@@ -688,7 +706,7 @@ input:placeholder-shown.invalid + label.lb-title:hover {
     margin: 1em auto;
     background-color: #fff;
     border: 3px solid;
-    border-image: linear-gradient(135deg, var(--blue-light) 0%, rgb(90, 15, 90) 100%) 1;
+    border-image: linear-gradient(135deg, var(--blue-light) 0%, var(--purple-dark) 100%) 1;
     box-shadow: 0px 0px 16px 0px rgba(0, 0, 0, 0.6);
 	animation: animateZoom 0.6s;
 }
@@ -697,31 +715,6 @@ input:placeholder-shown.invalid + label.lb-title:hover {
 	0%		{transform: scale(0);}
 	100%	{transform: scale(1);}
 }
-/*
-@keyframes borderRotate {
-    0%      {border-image: linear-gradient(135deg, var(--blue-light) 0%, rgb(90, 15, 90) 100%) 1}
-    100%    {border-image: linear-gradient(135deg, rgb(90, 15, 90) 0%, var(--blue-light) 100%) 1}
-}
-
-.modal-content:before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: -1;
-    margin: -3px;
-    border-radius: inherit;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0) 50%, var(--blue-light));
-    animation: borderRotate infinite;
-}
-
-@keyframes borderRotate {
-    0%      {transform: rotate(0deg);}
-    100%    {transform: rotate(360deg);}
-}
-*/
 
 span.close {
 	position: absolute;
@@ -739,7 +732,7 @@ span.close {
 }
 
 span.close:hover {
-    background: rgb(160, 15, 15);
+    background: var(--red-med-2);
     color: #fff;
 }
 
@@ -758,14 +751,14 @@ span.close:hover {
 .al-text {
     padding: 0.2rem;
     font-weight: 400;
-    font-size: 1.15rem;
+    font-size: 1.15em;
     text-align: center;
     white-space: pre-line;
     color: #000;
 }
 
 button.close {
-    background-color: var(--red);
+    background-color: var(--red-med);
 }
 
 button.close:hover {
@@ -775,9 +768,9 @@ button.close:hover {
 /********************* ACCOUNT *********************/
 .acc-modal {
     flex-flow: row;
-    height: 450px;
-    width: 550px;
-    font-size: 1.15rem;
+    height: 400px;
+    width: 500px;
+    font-size: 1.15em;
 }
 
 #acc-left-panel {
@@ -792,7 +785,7 @@ button.close:hover {
 
 .acc-btn {
     padding: 1rem;
-    color: #dfdfdf;
+    color: var(--white-light);
     background-color: rgba(20, 90, 170, 0.9);
     cursor: pointer;
     transition: 0.2s all ease-in-out;
@@ -837,7 +830,7 @@ button.close:hover {
 
 .bk-right {
     width: 30%;
-    margin-left: 0.25rem;
+    margin: 1rem 0 0 0.25rem;
 }
 
 .tag-group {
@@ -845,7 +838,8 @@ button.close:hover {
 }
 
 .tag-search-label {
-    padding-left: 0.25rem;
+    font-weight: 600;
+    font-size: 0.9em;
 }
 
 .tag-search, .tag-search-btn, .tags {
@@ -857,7 +851,7 @@ button.close:hover {
 }
 
 .tags {
-    height: 50%;
+    height: 100%;
     max-height: 85px;
     border-top: 0 !important;
     overflow-x: hidden;
@@ -895,22 +889,23 @@ button.close:hover {
 }
 
 .tag-x:hover {
-    color: rgb(160, 15, 15);
+    color: var(--red-med-2);
 }
 
 .tag-search-btn {
-    align-self: flex-end;
     padding: 2px 10px;
     border-left: 0 !important;
     font-size: 24px;
+    text-align: center;
     color: #555;
     cursor: pointer;
     transition: 0.1s all ease-in-out;
 }
 
 .tag-search-btn::before {
-    content: "•";
+    content: "\2022";
     display: inline-block;
+    width: 0.5em;
     transition: 0.2s transform ease-in-out;
 }
 
@@ -920,7 +915,7 @@ button.close:hover {
 }
 
 .tag-search-btn.add::before {
-    content: "×";
+    content: "\00D7";
     transform: rotate(45deg);
 }
 
@@ -929,12 +924,12 @@ button.close:hover {
 }
 
 .tag-search-btn.del::before {
-    content: "×";
+    content: "\00D7";
     transform: rotate(0deg);
 }
 
 .tag-search-btn.del:hover {
-    background-color: var(--red);
+    background-color: var(--red-med);
 }
 
 /********************* BOOKMARK GRID *********************/
@@ -953,7 +948,7 @@ button.close:hover {
     font-weight: 600;
     font-size: 45px;
     text-align: center;
-    color: rgb(30, 30, 30);
+    color: var(--black-med);
     z-index: 3;
     opacity: 0;
 }
@@ -1006,7 +1001,7 @@ button.close:hover {
 	line-height: 2em;
 	font-size: 15px;
 	background: rgba(0, 0, 0, 0.6);
-	color: #E8E8E8;
+	color: var(--white-med);
 	text-align: center;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -1070,7 +1065,7 @@ button.close:hover {
     border-radius: 3px;
     font-size: 16px;
     font-weight: 400;
-    color: #dfdfdf;
+    color: var(--white-light);
     background-color: rgba(0, 0, 0, 0.65);
     box-shadow: -2px 2px 8px 0 rgba(0, 0, 0, 0.3);
     z-index: 5;
@@ -1135,7 +1130,7 @@ button.close:hover {
 }
 
 .bg-green {
-    background-color: var(--green);
+    background-color: var(--green-light);
 }
 
 .bg-blue {
@@ -1143,7 +1138,7 @@ button.close:hover {
 }
 
 .bg-red {
-    background-color: var(--red);
+    background-color: var(--red-med);
 }
 
 .bg-orange {
@@ -1236,6 +1231,40 @@ button.close:hover {
 
     .file-input-name {
         max-width: 50px;
+    }
+}
+
+@media screen and (max-width: 500px), screen and (max-height: 500px) {
+    body {
+        font-size: 16px;
+    }
+
+    .modal-content {
+        max-width: 98vw;
+        overflow: auto;
+    }
+
+    .pad-ctn-2, .pad-ctn-3 {
+        padding: 1em;
+    }
+
+    .preview-output {
+        max-height: 9em;
+        max-width: 16em;
+    }
+
+    .bk-right {
+        width: 45%;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    .file-input-btn::after {
+        content: "Upload";
+    }
+
+    .file-input-btn.del::after {
+        content: "Remove";
     }
 }
 

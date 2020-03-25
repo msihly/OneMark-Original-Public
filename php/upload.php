@@ -1,7 +1,7 @@
 <?php
 require_once("../vendor/autoload.php");
 require_once("restricted/db-functions.php");
-require_once("restricted/logging.php");
+include_once("restricted/logging.php");
 
 if (isset($_FILES["imageURL"]) && $_FILES["imageURL"]["error"] != 4) {
     $s3 = new Aws\S3\S3Client([
@@ -54,7 +54,7 @@ if (isset($_FILES["imageURL"]) && $_FILES["imageURL"]["error"] != 4) {
         return ["Success" => false, "Errors" => $errors];
     }
 } else {
-    return ["Success" => true, "ImageID" => 2, "ImagePath" => "../images/No-Image.jpg"];
+    return ["Success" => true, "ImageID" => 2, "ImagePath" => "../images/No-Image.jpg", "ImageSize" => 0];
 }
 
 $conn = null;

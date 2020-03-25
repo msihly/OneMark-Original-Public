@@ -14,6 +14,43 @@
 ---
 # Changelog
 *The version histories below do not account for all changes made as documentation is written from the To-Do-List in the following major section and from memory prior to each commit. Additionally, minor changes are typically not recorded in the changelog or in the To-Do-List. Analysis of the differences on GitHub can be used to identify undocumented changes when necessary.*
+## Version 0.81 &nbsp;-&nbsp; (2020-03-25)
+* Created privacy policy page to comply with Chrome Web Store requirement for listing OneMark extension
+* Tidied up some elements of `stylesheet.css` (in-progress; will extract common elements to a `common.css` stylesheet and create page-specific stylesheets)
+
+## Version 0.80 &nbsp;-&nbsp; (2020-03-10)
+* Added supporting API files and functions for the new OneMark extension
+    * Added `ext-add-bookmark.php`, a custom version of `add-bookmark.php` for extension requests
+    * Added `ext-login.php`, a custom version of `login.php` for extension requests
+    * Added `bookmarkExists(...)` function to `db-functions.php` for server-side validation
+    * Updated `.htaccess` to allow origin requests from extension and `Authorization` headers
+* Replaced unicode characters with their codes for improved reliability
+* Updated `async / await` statements to reduce from 2 lines to 1 line per `fetch` call
+    * Bookmark info content abstracted from `createBookmark()` to `getBookmarkInfo(...)`
+* Updated `insertInlineMessage(...)` function of `Common` module to be simpler and support more options
+    * Can now set a duration for messages to be deleted after
+* Updated constraints on `title` and `pageURL` fields for bookmarks
+    * Updated validity checks in `isValid(...)` function of `Common` module
+    * Updated validity checks in `add-bookmark.php` and `edit-bookmark.php`
+* Updated AuthToken duration from 14 days to 30 days
+* Fixed error in info modals for bookmarks not updating without refreshing page
+* Fixed pathing issue in `logging.php` when included from a different directory
+* Fixed bookmarks with no image not receiving the new `ImageSize` property in `upload.php`
+
+## Version 0.73 &nbsp;-&nbsp; (2020-02-08)
+* Fixed AuthToken bug caused by cookie being set to directory instead of domain
+
+## Version 0.72 &nbsp;-&nbsp; (2020-02-08)
+* Fixed mobile-responsiveness of modals, font-sizes, and scrollable menus
+
+## Version 0.71 &nbsp;-&nbsp; (2020-02-08)
+* Fixed incorrect URL validation RegEx by replacing with AngularJS's RegEx
+* Fixes for undesired behavior involving tag search visual displays
+    * Fixed tag search button incorrect resizing on different screen sizes and variance in text-width
+        * Tag search label has been removed and the placeholder on the search input has been re-enabled
+    * Search field is now cleared when the tag search button is activated upon adding or removing a tag
+* Fixed bugs in `searchBookmarks()` function
+
 ## Version 0.70 &nbsp;-&nbsp; (2020-02-02)
 * Hotfix of critical errors in `modalClose()` function
 * Converted fat-arrow notation for anonymous functions requiring an `event` or `this` reference back to original notation
@@ -198,6 +235,7 @@
 * Update *'Account'* modal
     * Add options to change email and username with password input required to *'Account Info'* tab
     * Add total bookmarks, total tags, total unique tags, and image size total to *'Storage'* tab
+    * Create media queries as necessary
 * Confirm email on register with PHP
 * *'Forgot password?'* option to reset via email
 * Custom error pages - 403, 404 (open book with pages torn out)
@@ -338,3 +376,4 @@
     * Account info (username, email, date created, account type)
     * Edit account (password)
 * Fix AuthToken login bug caused by previous change from fetching full `login.php` in JS to in-line php session check
+* Fix *'Tag Search Button'* incorrect resizing on different screen sizes and variance in text-width

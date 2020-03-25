@@ -31,7 +31,7 @@
 	<body class="bg-prism">
         <nav id="navbar">
             <div class="nav-btn" id="create-bookmark" data-modal="u-bookmark"></div>
-            <input type="text" placeholder="Search..." id="searchbar" data-full-word="" data-and="">
+            <input type="text" placeholder="Search..." class="placeholder" id="searchbar" data-full-word="" data-and="">
             <div class="nav-menu sort">
                 <div class="nav-btn" id="sortmenu" data-menu="sortmenu-content"></div>
                 <div class="hidden" id="sortmenu-content">
@@ -67,10 +67,10 @@
                     <div class="row between">
                         <label for="image-upload" class="file-input-group">
                             <span class="file-input-name hidden" id="bk-image-name"></span>
-                            <span class="file-input-btn"><img src="images/Upload.png" class="file-input-icon">Upload Image</span>
+                            <span class="file-input-btn"><img src="images/Upload.png" class="file-input-icon"></span>
                         </label>
                             <input type="file" class="file-input" name="imageURL" id="image-upload" accept="image/png, image/jpeg">
-                        <span class="file-input-btn del" id="remove-upload"><img src="images/Delete.png" class="file-input-icon">Remove Image</span>
+                        <span class="file-input-btn del" id="remove-upload"><img src="images/Delete.png" class="file-input-icon"></span>
                             <input type="hidden" name="removeImage" id="bk-f-remove" value="false">
                     </div>
                     <div class="row">
@@ -88,10 +88,7 @@
                         </div>
                         <div class="column bk-right">
                             <div class="row">
-                                <div class="form-group tag-group">
-                                    <input type="text" placeholder="Enter Tags" id="tag-search" class="tag-search">
-                                    <label for="tag-search" class="lb-title tag-search-label">Tags</label>
-                                </div>
+                                <input type="text" placeholder="Tags" id="tag-search" class="placeholder tag-search">
                                 <span class="tag-search-btn" id="tag-btn" data-listener="tag-btn"></span>
                             </div>
                             <div class="tags" id="tags"></div>

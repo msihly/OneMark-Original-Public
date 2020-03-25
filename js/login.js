@@ -69,13 +69,12 @@ async function login(event) {
     if (!Common.checkErrors([...this.elements])) { return Common.toast("Errors in form fields", "error"); }
 
     var formData = new FormData(this),
-        response = await fetch("/php/login.php", {method: "POST", body: formData});
-    response = await response.json();
+        response = await (await fetch("/php/login.php", {method: "POST", body: formData})).json();
     if (response.Success) {
-        Common.insertInlineMessage("after", "#login-form", "#login", response.Message, "success");
+        Common.insertInlineMessage("after", "login", response.Message, {type: "success"});
         setTimeout(() => window.location.href = "/index.php", 1000);
     } else {
-        Common.insertInlineMessage("after", "#login-form", "#login", response.Message, "error");
+        Common.insertInlineMessage("after", "login", response.Message, {type: "error"});
     }
 }
 
@@ -84,12 +83,11 @@ async function register(event) {
     if (!Common.checkErrors([...this.elements])) { return Common.toast("Errors in form fields", "error"); }
 
     var formData = new FormData(this),
-        response = await fetch("/php/register.php", {method: "POST", body: formData});
-    response = await response.json();
+        response = await (await fetch("/php/register.php", {method: "POST", body: formData})).json();
     if (response.Success) {
-        Common.insertInlineMessage("after", "#register-form", "#register", response.Message, "success");
+        Common.insertInlineMessage("after", "register", response.Message, {type: "success"});
         setTimeout(() => window.location.href = "/index.php", 1000);
     } else {
-        Common.insertInlineMessage("after", "#register-form", "#register", response.Message, "error");
+        Common.insertInlineMessage("after", "register", response.Message, {type: "error"});
     }
 }

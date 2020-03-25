@@ -10,10 +10,14 @@ try {
         $pageURL = $_POST["pageURL"];
         $tags = json_decode($_POST["tags"]);
 
-        if (empty($title)) {
-            echo json_encode(["Success" => false, "Message" => "Title field is required"]);
-        } else if (empty($pageURL)) {
-            echo json_encode(["Success" => false, "Message" => "URL field is required"]);
+        if (empty($title) || empty($pageURL)) {
+            echo json_encode(["Success" => false, "Message" => "Title and URL fields are required"]);
+        } else if (strlen($title) > 255) {
+            echo json_encode(["Success" => false, "Message" => "Title cannot be more than 255 characters"]);
+        } else if (strlen($pageURL) > 2083) {
+            echo json_encode(["Success" => false, "Message" => "Page URL cannot be more than 2083 characters"]);
+        } else if (!filter_var($pageURL, FILTER_VALIDATE_URL)) {
+            echo json_encode(["Success" => false, "Message" => "Invalid page URL"]);
         } else {
             $bookmark = getBookmark($bookmarkID);
             $imageID = $bookmark["ImageID"];
