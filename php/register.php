@@ -25,7 +25,7 @@ try {
             $userID = register($email, $username, $password);
             $_SESSION["uid"] = $userID;
             $_SESSION["username"] = $username;
-            if (isset($_POST["remember-me"])) { setcookie("authToken", createToken($conn, $userID, 14), time() + (86400 * 14), "", ""); } // , TRUE, TRUE);   --removed for local testing without https
+            if (isset($_POST["remember-me"])) { setcookie("authToken", createToken($userID, 14), time() + (86400 * 14), "", ""); } // , TRUE, TRUE);   --removed for local testing without https
 
             echo json_encode(["Success" => true, "Message" => "Registration successful"]);
         }

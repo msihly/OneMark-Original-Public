@@ -8,7 +8,7 @@ try {
     } else if (isset($_COOKIE["authToken"]) && !empty($_COOKIE["authToken"])) {
         $userID = validateToken($_COOKIE["authToken"]);
         if ($userID === false) {
-            setcookie("authToken", "", 1); //delete cookie
+            setcookie("authToken", "", 1);
             echo json_encode(["Success" => false, "Message" => "Invalid authentication token"]);
         } else {
             $_SESSION["uid"] = $userID;

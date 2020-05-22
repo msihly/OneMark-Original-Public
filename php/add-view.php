@@ -4,7 +4,7 @@ include_once("restricted/logging.php");
 
 try {
     if (isset($_SESSION["uid"])) {
-        addView($_POST["bookmarkID"], $_SESSION["uid"]);
+        addView((int)$_POST["bookmarkID"], $_SESSION["uid"]);
     } else {
         logToFile("User not signed in", "e");
     }

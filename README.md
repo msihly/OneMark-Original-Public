@@ -14,6 +14,28 @@
 ---
 # Changelog
 *The version histories below do not account for all changes made as documentation is written from the To-Do-List in the following major section and from memory prior to each commit. Additionally, minor changes are typically not recorded in the changelog or in the To-Do-List. Analysis of the differences on GitHub can be used to identify undocumented changes when necessary.*
+## Version 0.90 &nbsp;-&nbsp; (2020-05-22)
+* Updated `.htaccess` to hide file extensions and use `DirectoryIndex`
+    * `index.php` renamed to `home.php`
+* Created `common.css` by extracting elements common to different pages / projects
+    * Each page now has a specific stylesheet, i.e. `home.css` and `login.css`
+* Updated all JavaScript files to use ES6 consistently, cleanup functions and global scope, and extract common functions
+    * Functions and object properties reordered lexicographically
+    * Global variables all placed into single file-specific global `const`
+    * Replaced all uses of `var` keyword with `let` and `const`
+    * Shortened frequently used and unncessarily long variable names while expanding more specific names to make their purpose clearer
+    * `home.js` functions `regexEscape(...)`, `formatBytes(...)`, `closeMenus()`, `toggleMenu()`, `modalClose(...)`, and `createAlert(...)` extracted to `common.js` module
+* Updates to `home.js`
+    * `sortBookmarks()` now persists sort method using localStorage
+    * Removed `activeBookmarks` variable and references to it as it was proactively created in an early version for a potential feature that no longer requires it
+    * Abstracted part of `bookmarksEmpty(...)` to new `checkEmpty(...)` in `common.js` module
+    * Bookmarks can now additionally be opened by clicking the scrollwheel
+* Updates to `common.js`
+    * Added `capitalize(...)`, `checkEmpty(...)`, `leadZeros(...)`, and `printDate(...)` functions
+    * Renamed `insertInlineMessage(...)` to `inlineMessage(...)`
+* Fixed registration bug associated with AuthTokens
+* Removed `php/restricted/db-steup.php`
+
 ## Version 0.81 &nbsp;-&nbsp; (2020-03-25)
 * Created privacy policy page to comply with Chrome Web Store requirement for listing OneMark extension
 * Tidied up some elements of `stylesheet.css` (in-progress; will extract common elements to a `common.css` stylesheet and create page-specific stylesheets)

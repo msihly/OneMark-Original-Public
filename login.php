@@ -1,18 +1,17 @@
 <?php
     session_start();
     if (isset($_SESSION["uid"])) {
-        header("Location: /index.php");
+        header("Location: /");
         exit;
     } else if (isset($_COOKIE["authToken"])) {
         include_once("php/restricted/db-functions.php");
         $userID = validateToken($_COOKIE["authToken"]);
-        if ($userID === false) {
-            setcookie("authToken", "", 1);
-        } else {
+        if ($userID !== false) {
             $_SESSION["uid"] = $userID;
-            header("Location: /index.php");
+            header("Location: /");
             exit;
         }
+        setcookie("authToken", "", 1);
     }
 ?>
 <!DOCTYPE html>
@@ -22,10 +21,12 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="icon" type="image/ico" href="images/favicon.ico">
-        <link rel="stylesheet" href="css/stylesheet.css">
+        <link rel="stylesheet" href="css/common.css">
+        <link rel="stylesheet" href="css/login.css">
 		<script src="js/login.js" type="module"></script>
 	</head>
 	<body>
+        <div class="lg-background"></div>
         <div class="lg-wrapper">
             <div class="lg">
                 <div class="lg-panel-image"></div>

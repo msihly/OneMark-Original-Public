@@ -1,20 +1,18 @@
 <?php
     session_start();
     if (!isset($_SESSION["uid"])) {
-        if (isset($_COOKIE["authToken"])) {
-            include_once("php/restricted/db-functions.php");
-            $userID = validateToken($_COOKIE["authToken"]);
-            if ($userID === false) {
-                setcookie("authToken", "", 1);
-                header("Location: /login.php");
-                exit;
-            } else {
-                $_SESSION["uid"] = $userID;
-            }
-        } else {
-            header("Location: /login.php");
+        if (!isset($_COOKIE["authToken"])) {
+            header("Location: /login");
             exit;
         }
+        include_once("php/restricted/db-functions.php");
+        $userID = validateToken($_COOKIE["authToken"]);
+        if ($userID === false) {
+            setcookie("authToken", "", 1);
+            header("Location: /login");
+            exit;
+        }
+        $_SESSION["uid"] = $userID;
     }
 ?>
 <!DOCTYPE html>
@@ -24,18 +22,19 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="icon" type="image/ico" href="images/favicon.ico">
-        <link rel="stylesheet" href="css/stylesheet.css">
+        <link rel="stylesheet" href="css/common.css">
+        <link rel="stylesheet" href="css/home.css">
 		<script src="js/home.js" type="module"></script>
 		<base target="_blank">
 	</head>
 	<body class="bg-prism">
         <nav id="navbar">
-            <div class="nav-btn" id="create-bookmark" data-modal="u-bookmark"></div>
+            <div class="nav-btn" id="create-bookmark"></div>
             <input type="text" placeholder="Search..." class="placeholder" id="searchbar" data-full-word="" data-and="">
             <div class="nav-menu sort">
-                <div class="nav-btn" id="sortmenu" data-menu="sortmenu-content"></div>
+                <div class="nav-btn" id="sortmenu" data-menu="sortmenu-content" data-listener="menu"></div>
                 <div class="hidden" id="sortmenu-content">
-                    <div class="sortmenu-btn desc active" id="modified-desc" data-text="Date Modified"></div>
+                    <div class="sortmenu-btn desc" id="modified-desc" data-text="Date Modified"></div>
                     <div class="sortmenu-btn asc" id="modified-asc" data-text="Date Modified"></div>
                     <div class="sortmenu-btn desc" id="created-desc" data-text="Date Created"></div>
                     <div class="sortmenu-btn asc" id="created-asc" data-text="Date Created"></div>
@@ -48,7 +47,7 @@
                 </div>
             </div>
             <div class="nav-menu">
-                <div class="nav-btn" id="sidemenu" data-menu="sidemenu-content"></div>
+                <div class="nav-btn" id="sidemenu" data-menu="sidemenu-content" data-listener="menu"></div>
                 <div class="hidden" id="sidemenu-content">
                     <div class="sidemenu-btn" id="account">ACCOUNT</div>
                     <div class="sidemenu-btn" id="logout">LOGOUT</div>

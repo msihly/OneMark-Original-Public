@@ -8,7 +8,7 @@ try {
         $bookmarks = getAllBookmarks($userID);
         echo json_encode(["Success" => true, "Bookmarks" => $bookmarks]);
     } else {
-        header("Location: ../index.php");
+        header("Location: ../login.php");
         exit;
     }
 } catch(PDOException $e) {
