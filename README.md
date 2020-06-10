@@ -9,11 +9,50 @@
 
 ---
 # Disclaimers
-*OneMark is designed and tested on **Chrome v78+**. Most features of OneMark are supported by Mozilla Firefox and other Chromium based browsers; however, support is NOT gauranteed. Due to the use of EMCAScript 2018 functionality, the bookmark search feature may not be properly supported by Firefox. Microsoft Edge will not properly access several features of OneMark. Internet Explorer is not, and will not be, supported by OneMark.*
+*OneMark is designed and tested on **Chrome v80+**. Most features of OneMark are supported by Mozilla Firefox and other Chromium based browsers; however, support is NOT gauranteed. Due to the use of EMCAScript 2018 functionality, the bookmark search feature may not be properly supported by Firefox. Microsoft Edge will not properly access several features of OneMark. Internet Explorer is not, and will not be, supported by OneMark.*
 
 ---
 # Changelog
 *The version histories below do not account for all changes made as documentation is written from the To-Do-List in the following major section and from memory prior to each commit. Additionally, minor changes are typically not recorded in the changelog or in the To-Do-List. Analysis of the differences on GitHub can be used to identify undocumented changes when necessary.*
+## Version 1.01 &nbsp;-&nbsp; (2020-06-06)
+* Compressed repetitive variable assignment in `searchBookmarks()` even further using destructuring and mapping
+* Fixed typo in function call on register page throwing fatal error
+
+## Version 1.00 &nbsp;-&nbsp; (2020-06-05)
+* Restructured global objects and references
+* Redesigned various UI elements
+    * Homepage changed to dark mode (light mode will return as an alternative at a later date)
+    * Modals updated with cleaner designs
+    * Transparent input style with animated label moved from default styling on inputs to its own classes (currently no longer used on homepage, only on login page)
+    * 'Upload Image' button on bookmark create / edit modals now changes to 'Remove Image' if an image is uploaded or already exists
+        * Removed 'Remove Image' button
+        * Bookmark edit modal now checks if the bookmark has an image and updates the 'Upload Image' button on modal open
+        * Button now takes up full available space at all viewport dimensions
+        * Removed `fileUpload()` and `removeUpload()` and restructured functionality into `uploadFile()` and `updateFileInput()`
+    * Bookmark create / edit modals now convert from a row structure to a column structure on mobile
+    * Bookmarks now have a minimal semi-transparent black border to better differentiate between bookmarks with similar images
+    * Changed bookmark outer and title elements from `div` to `figure` and `figcaption` elements for improved semantics
+    * Changed buttons using `a` tags on 'login' / 'register' to `span` tags for improved semantics
+* Fixed issues resulting from incorrect ordering on some `querySelectorAll` destructuring combinations
+* Updated 'Account' modal with ability to change username and email
+    * Added supporting functionality to `update-profile.php` *(formerly `update-pass.php`)* and `db-functions.php` to change username, email, or password
+    * Changed `updatePassword()` to `updateProfile()` in `home.js` and merged former functionality with new username and email functionality
+    * Updated `modalAccount()` in `home.js` to only call `php/account-info.php` and store it in the global object if it's not already stored, which reduces needless server calls every time the modal is opened
+* Overhauled bookmark search
+    * Added 'Advanced Search' dropdown UI
+        * Can add terms in the form of [Anything || Title || URL || Tag] + [contains || does not contain]
+        * Match words in either AND or OR form
+        * Match partial words or whole words only
+        * Collapses to column view on mobile
+        * Added `addSearchTerm()` to `home.js` to add terms to searchbar and then call `searchBookmarks()`
+    * Updated `searchBookmarks()` - revised regular expression creation and testing to allow for negated searches and more complex combinations
+* Merged `hideTags(...)` and `showTags(...)` into `displayTags(...)` in `home.js`
+* Added `emptyContainer(...)` to `common.js` for emptying container elements of their children
+* Added `closeMenu(...)` to `common.js` to close a specific menu
+* Added `selectDropdown()` to `common.js` to support custom-styled dropdown menus (replacement for `select` and `option` html tags)
+* Renamed `printDate(...)` to `formatDate(...)` in `common.js`
+* Updated `closeMenus(...)` and `toggleMenu(...)` to allow prevention of parent menu closure when opening child menus, such as the dropdowns on the 'Advanced Search' menu
+
 ## Version 0.90 &nbsp;-&nbsp; (2020-05-22)
 * Updated `.htaccess` to hide file extensions and use `DirectoryIndex`
     * `index.php` renamed to `home.php`

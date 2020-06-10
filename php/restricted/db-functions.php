@@ -74,27 +74,39 @@ function register(string $email, string $username, string $password) {
 
     $conn->beginTransaction();
 
-    $stmt = "INSERT INTO User (Email, DateCreated)
+    $query = "INSERT INTO User (Email, DateCreated)
                 VALUES (:email, :dateCreated);";
-    $query = $conn->prepare($stmt);
-    $query->bindParam(":email", $email);
-    $query->bindParam(":dateCreated", $date);
-    $query->execute();
+    $stmt = $conn->prepare($query);
+    $stmt->bindParam(":email", $email);
+    $stmt->bindParam(":dateCreated", $date);
+    $stmt->execute();
 
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
     $userID = $conn->lastInsertID();
 
-    $stmt = "INSERT INTO Logins (Username, PasswordHash, UserID)
+    $query = "INSERT INTO Logins (Username, PasswordHash, UserID)
                 VALUES (:username, :passwordHash, :userID);";
-    $query = $conn->prepare($stmt);
-    $query->bindParam(":username", $username);
-    $query->bindParam(":passwordHash", $passwordHash);
-    $query->bindParam(":userID", $userID);
-    $query->execute();
+    $stmt = $conn->prepare($query);
+    $stmt->bindParam(":username", $username);
+    $stmt->bindParam(":passwordHash", $passwordHash);
+    $stmt->bindParam(":userID", $userID);
+    $stmt->execute();
 
     $conn->commit();
 
     return $userID;
+}
+
+function updateProfile(int $userID, string $email, string $username) {
+    GLOBAL $conn;
+    $query = "UPDATE      User AS u, Logins AS l
+              SET         u.Email = :email, l.Username = :username
+              WHERE       u.UserID = :userID;";
+    $stmt = $conn->prepare($query);
+    $stmt->bindParam(":userID", $userID);
+    $stmt->bindParam(":email", $email);
+    $stmt->bindParam(":username", $username);
+    $stmt->execute();
 }
 
 function updatePass(int $userID, string $passwordHash) {
@@ -185,7 +197,6 @@ function validateToken(string $token) {
 /******************************* BOOKMARK *******************************/
 function addView(int $bookmarkID, int $userID) {
     GLOBAL $conn;
-
     $query = "UPDATE      Bookmark AS b
               SET         b.Views = b.Views + 1
               WHERE       b.UserID = :userID AND b.BookmarkID = :bookmarkID;";
@@ -243,7 +254,6 @@ function editBookmark(int $bookmarkID, int $userID, string $title, string $pageU
 
 function getAllBookmarks(int $userID) {
     GLOBAL $conn;
-
     $query = "SELECT      b.BookmarkID, b.Title, b.PageURL, i.ImagePath, i.ImageSize, b.DateCreated, b.DateModified, b.Views
               FROM        Bookmark AS b INNER JOIN Images AS i
                               ON b.ImageID = i.ImageID

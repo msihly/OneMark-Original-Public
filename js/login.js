@@ -13,8 +13,15 @@ const LoginG = {
             "dataListener": "errorCheck",
             "eventType": "input",
             "function": Cmn.errorCheck
+        }, {
+            "dataListener": "loginSwitch",
+            "eventType": "click",
+            "function": e => {
+                Cmn.switchPanel(e.target.dataset.altPanel, e.target.dataset.panel);
+                randomizeTheme();
+            }
         }],
-    themeIdx: 0,
+    themeIdx: -1,
     themes: [{
             "panel": "../images/panel-white-mountain.jpg",
             "wrapper": "../images/purple-mountain.jpg",
@@ -35,18 +42,8 @@ const LoginG = {
 }
 
 window.addEventListener("DOMContentLoaded", async function() {
-    document.getElementById("login-switch").addEventListener("click", event => {
-        event.preventDefault();
-        Cmn.switchPanel("register-panel", "login-panel");
-        randomizeTheme();
-    });
-    document.getElementById("register-switch").addEventListener("click", event => {
-        event.preventDefault();
-        Cmn.switchPanel("login-panel", "register-panel");
-        randomizeTheme();
-    });
-
     Cmn.addListeners(LoginG.eventListeners);
+    randomizeTheme();
 });
 
 function randomizeTheme() {
@@ -79,7 +76,7 @@ async function register(event) {
     let formData = new FormData(this),
         res = await (await fetch("/php/register.php", {method: "POST", body: formData})).json();
     if (res.Success) {
-        Cmn.insertInlineMessage("after", "register", res.Message, {type: "success"});
+        Cmn.inlineMessage("after", "register", res.Message, {type: "success"});
         setTimeout(() => window.location.href = "/", 1000);
     } else {
         Cmn.inlineMessage("after", "register", res.Message, {type: "error"});

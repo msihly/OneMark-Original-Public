@@ -47,10 +47,23 @@ export function debounce(fn, delay) {
     }
 }
 
+export function emptyContainer(container) {
+    while (container.firstChild) { container.removeChild(container.firstChild); }
+}
+
 export function formatBytes(bytes) {
     if (bytes < 1) { return "0 B"; }
     let power = Math.floor(Math.log2(bytes) / 10);
     return `${(bytes / (1024 ** power)).toFixed(2)} ${("KMGTPEZY"[power - 1] || "")}B`;
+}
+
+export function formatDate(dateTime, type = "date") {
+    let [year, month, day, time] = [dateTime.substring(0, 4), dateTime.substring(5, 7), dateTime.substring(8, 10), dateTime.substring(11)];
+    switch (type.toLowerCase()) {
+        case "date": return `${CmnG.months[+month]} ${day}, ${year}`;
+        case "datetime": return `${CmnG.months[+month]} ${day}, ${year} | ${new Date(`1970-01-01T${time}`).toLocaleTimeString({}, {hour: "numeric", minute: "numeric"})}`;
+        case "time": return new Date(`1970-01-01T${time}`).toLocaleTimeString({}, {hour: "numeric", minute: "numeric"});
+    }
 }
 
 export function getRandomInt(min, max, cur = null) {
@@ -60,15 +73,6 @@ export function getRandomInt(min, max, cur = null) {
 
 export function leadZeros(num, places) {
     return String(num).padStart(places, "0");
-}
-
-export function printDate(dateTime, type = "date") {
-    let [year, month, day, time] = [dateTime.substring(0, 4), dateTime.substring(5, 7), dateTime.substring(8, 10), dateTime.substring(11)];
-    switch (type) {
-        case "date": return `${CmnG.months[+month]} ${day}, ${year}`;
-        case "dateTime": return `${CmnG.months[+month]} ${day}, ${year} | ${new Date(`1970-01-01T${time}`).toLocaleTimeString({}, {hour: "numeric", minute: "numeric"})}`;
-        case "time": return new Date(`1970-01-01T${time}`).toLocaleTimeString({}, {hour: "numeric", minute: "numeric"});
-    }
 }
 
 export function regexEscape(string) {
@@ -145,24 +149,42 @@ export function isValid(element) {
 }
 
 /******************************* MENUS *******************************/
-export function closeMenus() {
+export function closeMenu(menu) {
+    if (CmnG.openMenus.includes(menu)) {
+        menu.classList.add("hidden");
+        CmnG.openMenus.splice(CmnG.openMenus.indexOf(menu));
+    }
+}
+
+export function closeMenus(...exceptions) {
     if (CmnG.openMenus.length > 0) {
-        CmnG.openMenus.forEach(e => {
-            e.classList.toggle("hidden");
-            CmnG.openMenus.shift();
+        CmnG.openMenus.filter(f => !exceptions.includes(f)).forEach(e => {
+            e.classList.add("hidden");
+            CmnG.openMenus.splice(CmnG.openMenus.indexOf(e));
         });
     }
 }
 
-export function toggleMenu() {
+export function selectDropdown() {
+    let option = event.target,
+        dropdown = document.getElementById(option.dataset.dropdown);
+    dropdown.dataset.value = option.innerHTML;
+    closeMenu(option.parentNode);
+}
+
+export function toggleMenu(child = false) {
     event.stopPropagation();
-    let ele = this || event.target,
-        menu = document.getElementById(ele.dataset.menu);
+    let ele = event.target,
+        menu = document.getElementById(ele.dataset.menu),
+        parentMenu = child ? document.getElementById(ele.dataset.parentMenu) : null;
+
     if (!CmnG.openMenus.includes(menu)) {
-        closeMenus();
-        menu.classList.toggle("hidden");
+        closeMenus(parentMenu);
+        menu.classList.remove("hidden");
         CmnG.openMenus.push(menu);
-    } else { closeMenus(); }
+    } else {
+        closeMenus(parentMenu);
+    }
 }
 
 /******************************* MODAL *******************************/

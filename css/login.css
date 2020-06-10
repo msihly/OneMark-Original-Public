@@ -1,3 +1,7 @@
+:root {
+    --foreground-color: #000;
+}
+
 /********************* GENERAL *********************/
 html, body {
     background-color: #000;
@@ -66,6 +70,7 @@ html, body {
 .lg-link {
     display: inline;
     color: var(--theme-color);
+    cursor: pointer;
 }
 
 /********************* MOBILE *********************/

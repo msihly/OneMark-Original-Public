@@ -32,16 +32,16 @@
                 <div class="lg-panel-image"></div>
                 <div class="lg-panel-form pad-ctn-3" id="login-panel">
                     <h3>Log In</h3>
-                    <p class="lg-text">Not a member? <a href="#" class="lg-link" id="login-switch">Register now</a></p>
+                    <p class="lg-text">Not a member? <span class="lg-link" id="login-switch" data-panel="login-panel" data-alt-panel="register-panel" data-listener="loginSwitch">Register now</span></p>
                     <form id="login-form" enctype="multipart/form-data">
-                        <div class="form-group">
+                        <div class="form-group rev">
                             <label class="error-label invisible" id="login-username-error">Error</label>
-                            <input type="text" placeholder="Username" name="username" id="login-username" data-listener="errorCheck" required>
+                            <input type="text" placeholder="Username" name="username" id="login-username" class="t-input" data-listener="errorCheck" required>
                             <label for="login-username" class="lb-title">Username</label>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group rev">
                             <label class="error-label invisible" id="login-password-error">Error</label>
-                            <input type="password" placeholder="Password" name="password" id="login-password" data-listener="errorCheck" required>
+                            <input type="password" placeholder="Password" name="password" id="login-password" class="t-input" data-listener="errorCheck" required>
                             <label for="login-password" class="lb-title">Password</label>
                         </div>
                         <label class="checkbox-ctn">
@@ -54,26 +54,26 @@
                 </div>
                 <div class="lg-panel-form pad-ctn-3 hidden-panel hidden" id="register-panel">
                     <h3>Register</h3>
-                    <p class="lg-text">Already have an account? <a href="#" class="lg-link" id="register-switch">Login now</a></p>
+                    <p class="lg-text">Already have an account? <span class="lg-link" id="register-switch" data-panel="login-panel" data-alt-panel="register-panel" data-listener="loginSwitch">Login now</a></p>
                     <form id="register-form" enctype="multipart/form-data">
-                        <div class="form-group">
+                        <div class="form-group rev">
                             <label class="error-label invisible" id="register-email-error">Error</label>
-                            <input type="text" placeholder="Email" name="email" id="register-email" data-listener="errorCheck" required>
+                            <input type="text" placeholder="Email" name="email" id="register-email" class="t-input" data-listener="errorCheck" required>
                             <label for="register-email" class="lb-title">Email</label>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group rev">
                             <label class="error-label invisible" id="register-username-error">Error</label>
-                            <input type="text" placeholder="Username" name="username" id="register-username" data-listener="errorCheck" required>
+                            <input type="text" placeholder="Username" name="username" id="register-username" class="t-input" data-listener="errorCheck" required>
                             <label for="register-username" class="lb-title">Username</label>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group rev">
                             <label class="error-label invisible" id="register-password-error">Error</label>
-                            <input type="password" placeholder="Password" name="password" id="register-password" data-listener="errorCheck" required>
+                            <input type="password" placeholder="Password" name="password" id="register-password" class="t-input" data-listener="errorCheck" required>
                             <label for="register-password" class="lb-title">Password</label>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group rev">
                             <label class="error-label invisible" id="register-password-confirm-error">Error</label>
-                            <input type="password" placeholder="Confirm Password" name="password-confirm" id="register-password-confirm" data-listener="errorCheck" required>
+                            <input type="password" placeholder="Confirm Password" name="password-confirm" id="register-password-confirm" class="t-input" data-listener="errorCheck" required>
                             <label for="register-password-confirm" class="lb-title">Confirm Password</label>
                         </div>
                         <label class="checkbox-ctn">

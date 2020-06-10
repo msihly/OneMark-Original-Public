@@ -1,47 +1,50 @@
 import * as Cmn from "./modules/common.js";
 
 const HomeG = {
-    accCurTab: "acc-tab-info",
-    accCurPanel: "acc-panel-info",
+    account: {
+        curTab: "acc-tab-info",
+        curPanel: "acc-panel-info",
+        info: null
+    },
     bookmarks: [],
-    container: "",
+    container: null,
     eventListeners: [{
             "id": "account",
             "eventType": "click",
             "function": modalAccount
         }, {
-            "id": "acc-pass-form",
-            "eventType": "submit",
-            "function": () => updatePassword()
+            "id": "adv-search-add",
+            "eventType": "click",
+            "function": addSearchTerm
         }, {
             "id": "create-bookmark",
             "eventType": "click",
             "function": () => modalBookmark("upload")
         }, {
-            "id": "image-upload",
+            "id": "bk-file-input",
             "eventType": "change",
-            "function": fileUpload
+            "function": uploadFile
+        }, {
+            "id": "bk-file-input-group",
+            "eventType": "click",
+            "function": updateFileInput
         }, {
             "id": "logout",
             "eventType": "click",
-            "function": () => logout()
+            "function": logout
         }, {
             "id": "preview",
             "eventType": "click",
             "function": () => openBookmark(true)
         }, {
+            "id": "search-group",
+            "eventType": "click",
+            "function": () => event.stopPropagation()
+        }, {
             "id": "searchbar",
             "eventType": "input",
             "function": searchBookmarks,
             "debounce": 100
-        }, {
-            "id": "remove-upload",
-            "eventType": "click",
-            "function": removeUpload
-        }, {
-            "class": "sortmenu-btn",
-            "eventType": "click",
-            "function": sortBookmarks
         }, {
             "id": "tag-btn",
             "eventType": "click",
@@ -52,14 +55,22 @@ const HomeG = {
             "function": searchTags,
             "debounce": 50
         }, {
+            "class": "sortmenu-btn",
+            "eventType": "click",
+            "function": sortBookmarks
+        }, {
             "dataListener": "acc-btn",
             "eventType": "click",
-            "function": function(event) {
-                Cmn.switchPanel(HomeG.accCurPanel, event.target.dataset.panel);
-                HomeG.accCurPanel = event.target.dataset.panel;
-                Cmn.switchTab(HomeG.accCurTab, event.target.id);
-                HomeG.accCurTab = event.target.id;
+            "function": e => {
+                Cmn.switchPanel(HomeG.account.curPanel, e.target.dataset.panel);
+                HomeG.account.curPanel = e.target.dataset.panel;
+                Cmn.switchTab(HomeG.account.curTab, e.target.id);
+                HomeG.account.curTab = e.target.id;
             }
+        }, {
+            "dataListener": "dropdown",
+            "eventType": "click",
+            "function": Cmn.selectDropdown
         }, {
             "dataListener": "errorCheck",
             "eventType": "input",
@@ -71,19 +82,39 @@ const HomeG = {
         }, {
             "dataListener": "menu",
             "eventType": "click",
-            "function": Cmn.toggleMenu
+            "function": () => Cmn.toggleMenu()
+        }, {
+            "dataListener": "menuChild",
+            "eventType": "click",
+            "function": () => Cmn.toggleMenu(true)
         }, {
             "dataListener": "modalClose",
             "eventType": "mousedown",
             "function": () => Cmn.modalClose()
         }, {
+            "dataListener": "profileForm",
+            "eventType": "submit",
+            "function": updateProfile
+        }, {
+            "dataListener": "searchMode",
+            "eventType": "change",
+            "function": changeSearchMode
+        }, {
             "domObject": document,
             "eventType": "click",
             "function": Cmn.closeMenus
         }],
-    tags: [],
-    tagsCtn: "",
-    tagSearch: ""
+    search: {
+        advContains: null,
+        advInput: null,
+        advType: null,
+        searchbar: null
+    },
+    tag: {
+        container: null,
+        search: null
+    },
+    tags: []
 }
 
 const LazyObserver = new IntersectionObserver(entries => {
@@ -98,8 +129,12 @@ const LazyObserver = new IntersectionObserver(entries => {
 
 window.addEventListener("DOMContentLoaded", async function() {
     HomeG.container = document.getElementById("bookmark-container");
-    HomeG.tagSearch = document.getElementById("tag-search");
-    HomeG.tagsCtn = document.getElementById("tags");
+    HomeG.tag.search = document.getElementById("tag-search");
+    HomeG.tag.container = document.getElementById("tags");
+    HomeG.search.advContains = document.getElementById("adv-search-contains");
+    HomeG.search.advInput = document.getElementById("adv-search-input");
+    HomeG.search.advType = document.getElementById("adv-search-type");
+    HomeG.search.searchbar = document.getElementById("searchbar");
 
     Cmn.addListeners(HomeG.eventListeners);
 
@@ -124,26 +159,32 @@ async function logout() {
     }
 }
 
-async function updatePassword() {
+async function updateProfile() {
     event.preventDefault();
     if (!Cmn.checkErrors([...this.elements])) { return Cmn.toast("Errors in form fields", "error"); }
 
-    let formData = new FormData(this),
-        res = await (await fetch("/php/update-pass.php", {method: "POST", body: formData})).json();
+    let formData = new FormData(this);
+    formData.append("formType", this.dataset.type);
 
-    res.Success ? Cmn.toast(res.Message, "success") : Cmn.toast(res.Message, "error");
+    let res = await (await fetch("/php/update-profile.php", {method: "POST", body: formData})).json();
+    res.Success ? Cmn.toast(`${Cmn.capitalize(this.dataset.type)} updated`, "success") : Cmn.toast(res.Message, "error");
+    if (res.Info) {
+        HomeG.account.info.Username = res.Info.Username;
+        HomeG.account.info.Email = res.Info.Email;
+    }
 }
 
 /******************************* MODAL *******************************/
 async function modalAccount() {
-    let [modal, username, email, dateCreated, accType] = document.querySelectorAll("#acc-modal, #acc-username, #acc-email, #acc-created, #acc-type"),
-        res = await (await fetch("/php/account-info.php")).json();
+    let [modal, username, email, dateCreated, accType] = document.querySelectorAll("#acc-modal, #acc-username, #acc-email, #acc-created, #acc-type");
+    //if (HomeG.account.info === null) { HomeG.account.info = (await (await fetch("/php/account-info.php")).json()).Info; }
+    let info = HomeG.account.info === null ? HomeG.account.info = (await (await fetch("/php/account-info.php")).json()).Info : HomeG.account.info;
 
-    if (!res.Success) { return Cmn.toast(res.Message, "error"); }
-    username.innerHTML = res.Info.Username;
-    email.innerHTML = res.Info.Email;
-    dateCreated.innerHTML = res.Info.DateCreated;
-    accType.innerHTML = res.Info.AccessLevel;
+    username.value = info.Username;
+    email.value = info.Email;
+    dateCreated.value = Cmn.formatDate(info.DateCreated);
+    dateCreated.title = Cmn.formatDate(info.DateCreated, "datetime");
+    accType.value = info.AccessLevel;
 
     Cmn.closeMenus();
 	modal.classList.remove("hidden");
@@ -151,13 +192,17 @@ async function modalAccount() {
 
 function modalBookmark(formType) {
     event.preventDefault();
-    let [modal, previewURL, previewTitle, previewImage, form, formURL, formTitle, tagSearch, tagBtn, tagsCtn] =
-            document.querySelectorAll("#bk-modal, #preview, #preview-title, #preview-image, #bk-f, #bk-f-url, #bk-f-title, #tag-search, #tag-btn, #tags");
+    let [modal, previewURL, previewImage, previewTitle, form, fileInputGroup, fileLabel, formURL, formTitle, tagSearch, tagBtn, tagsCtn] =
+            document.querySelectorAll("#bk-modal, #preview, #preview-image, #preview-title, #bk-f, #bk-file-input-group, #file-label, #bk-f-url, #bk-f-title, #tag-search, #tag-btn, #tags");
 
     if (formType == "upload") {
         previewURL.dataset.href = "";
         previewTitle.innerHTML = "No Title";
         previewImage.src = "images/No-Image.jpg";
+
+        fileInputGroup.classList.remove("del");
+        fileLabel.title = fileLabel.innerHTML = "";
+        fileLabel.classList.add("hidden");
 
         formURL.value = "";
         formTitle.value = "";
@@ -168,7 +213,7 @@ function modalBookmark(formType) {
         while (tagsCtn.firstChild) { tagsCtn.removeChild(tagsCtn.firstChild); }
 
         form.removeEventListener("submit", editBookmark);
-        form.addEventListener("submit", () => uploadBookmark());
+        form.addEventListener("submit", uploadBookmark);
     } else if (formType == "edit") {
         let	bkInfo = HomeG.bookmarks[HomeG.bookmarks.findIndex(({BookmarkID}) => BookmarkID == event.target.dataset.parent.substring(1))];
         form.dataset.bkTarget = event.target.dataset.parent;
@@ -176,6 +221,11 @@ function modalBookmark(formType) {
         previewURL.dataset.href = bkInfo.PageURL;
         previewTitle.innerHTML = bkInfo.Title;
         previewImage.src = bkInfo.ImagePath;
+
+        let hasImage = !/No-Image.jpg$/.test(bkInfo.ImagePath);
+        fileInputGroup.classList.toggle("del", hasImage);
+        fileLabel.title = fileLabel.innerHTML = hasImage ? bkInfo.ImagePath.substring(bkInfo.ImagePath.lastIndexOf("/") + 1) : "";
+        fileLabel.classList.toggle("hidden", !hasImage);
 
         formURL.value = bkInfo.PageURL;
         formTitle.value = bkInfo.Title;
@@ -190,7 +240,7 @@ function modalBookmark(formType) {
         Cmn.errorCheck.call(formTitle);
 
         form.removeEventListener("submit", uploadBookmark);
-        form.addEventListener("submit", () => editBookmark());
+        form.addEventListener("submit", editBookmark);
     }
 
     Cmn.closeMenus();
@@ -204,31 +254,35 @@ function inputPreview() {
     else { preview.setAttribute(this.dataset.attr, Cmn.isValid(this).Valid ? this.value : this.dataset.invalidValue); }
 }
 
-function fileUpload() {
-	let fileName = this.value.split("\\").pop(),
-		label = document.getElementById("bk-image-name"),
-        imagePreview = document.getElementById("preview-image");
-
-    document.getElementById("bk-f-remove").value = "false";
-	label.classList.toggle("hidden", !fileName);
-	label.innerHTML = fileName;
-
-	if (this.files.length != 0) {
-		let reader = new FileReader();
-		reader.onload = function(e) {imagePreview.src = e.target.result;}
-		reader.readAsDataURL(this.files[0]);
-	} else {
-		imagePreview.src = "/images/No-Image.jpg";
+function updateFileInput() {
+    if (this.classList.contains("del")) {
+        event.preventDefault();
+        let [preview, fileLabel, fileInput, inputRemove] = document.querySelectorAll("#preview-image, #file-label, #bk-file-input, #bk-file-remove");
+        preview.src = "/images/No-Image.jpg";
+        fileLabel.title = fileLabel.innerHTML = "";
+        fileLabel.classList.add("hidden");
+        this.classList.remove("del");
+        fileInput.value = "";
+        inputRemove.value = "true";
     }
 }
 
-function removeUpload() {
-    let label = document.getElementById("bk-image-name");
-    document.getElementById("image-upload").value = "";
-    document.getElementById("bk-f-remove").value = "true";
-    document.getElementById("preview-image").src = "/images/No-Image.jpg";
-    label.innerHTML = "";
-    label.classList.add("hidden");
+function uploadFile() {
+    let fileName = this.value.split("\\").pop(),
+        [preview, inputGroup, fileLabel, inputRemove] = document.querySelectorAll("#preview-image, #bk-file-input-group, #file-label, #bk-file-remove");
+    inputRemove.value = "false";
+    fileLabel.classList.toggle("hidden", !fileName);
+    fileLabel.title = fileLabel.innerHTML = fileName;
+
+    if (this.files.length > 0) {
+        let reader = new FileReader();
+        reader.onload = e => preview.src = e.target.result;
+        reader.readAsDataURL(this.files[0]);
+        inputGroup.classList.add("del");
+    } else {
+        preview.src = "/images/No-Image.jpg";
+        inputGroup.classList.remove("del");
+    }
 }
 
 /******************************* BOOKMARKS *******************************/
@@ -238,8 +292,8 @@ function bookmarksEmpty(arr) {
 }
 
 function createBookmark(bkInfo) {
-    let html = `<div class="bookmark" id="b${bkInfo.BookmarkID}" data-href="${bkInfo.PageURL}">
-                    <div class="title" id="t${bkInfo.BookmarkID}">${bkInfo.Title}</div>
+    let html = `<figure class="bookmark" id="b${bkInfo.BookmarkID}" data-href="${bkInfo.PageURL}">
+                    <figcaption class="title" id="t${bkInfo.BookmarkID}">${bkInfo.Title}</figcaption>
                     <img class="image lazy" id="i${bkInfo.BookmarkID}" src="/images/Lazy-Load.jpg" data-src="${bkInfo.ImagePath}">
                     <div class="menu">
                         <div class="menu-content hidden" id="m${bkInfo.BookmarkID}">
@@ -249,7 +303,7 @@ function createBookmark(bkInfo) {
                         </div>
                         <div class="menu-toggle" id="m-t${bkInfo.BookmarkID}" data-menu="m${bkInfo.BookmarkID}"></div>
                     </div>
-                </div>`;
+                </figure>`;
 
     let frag = document.createRange().createContextualFragment(html),
         outer = frag.querySelector(`#b${bkInfo.BookmarkID}`);
@@ -319,14 +373,24 @@ async function editBookmark() {
 
 function getBookmarkInfo(bookmarkID) {
     let bk = HomeG.bookmarks[HomeG.bookmarks.findIndex(({BookmarkID}) => BookmarkID == bookmarkID)];
-    return `<b>Date Created</b>
-            ${bk.DateCreated}
-            <b>Date Modified</b>
-            ${bk.DateModified}
-            <b>Image Size</b>
-            ${Cmn.formatBytes(bk.ImageSize)}
-            <b>View Count</b>
-            ${bk.Views}`;
+    return  `<table class="table-vert right">
+                <tr>
+                    <th>Date Created</th>
+                    <td title="${Cmn.formatDate(bk.DateCreated, "datetime")}">${Cmn.formatDate(bk.DateCreated)}</td>
+                </tr>
+                <tr>
+                    <th>Date Modified</th>
+                    <td title="${Cmn.formatDate(bk.DateModified, "datetime")}">${Cmn.formatDate(bk.DateModified)}</td>
+                </tr>
+                <tr>
+                    <th>Image Size</th>
+                    <td title="${bk.ImageSize} bytes">${Cmn.formatBytes(bk.ImageSize)}</td>
+                </tr>
+                <tr>
+                    <th>View Count</th>
+                    <td>${bk.Views}</td>
+                </tr>
+            </table>`;
 }
 
 async function getBookmarks() {
@@ -352,10 +416,6 @@ function openBookmark(preview = false) {
 
 function removeBookmarks(arr) {
     arr.forEach(ele => document.getElementById(`b${ele["BookmarkID"]}`).remove());
-}
-
-function removeAllBookmarks(ctnr) {
-    while (ctnr.firstChild) { ctnr.removeChild(ctnr.firstChild); }
 }
 
 function spliceBookmark(arr, bookmarkID) {
@@ -385,47 +445,62 @@ async function uploadBookmark() {
 }
 
 /******************************* SEARCH *******************************/
-function hideBookmarks(arr) {
-    arr.forEach(e => document.getElementById(`b${e["BookmarkID"]}`).classList.add("hidden"));
+function addSearchTerm() {
+    let contains = HomeG.search.advContains.dataset.value,
+        type = HomeG.search.advType.dataset.value.toLowerCase(),
+        term = HomeG.search.advInput.value,
+        searchbar = HomeG.search.searchbar,
+        search = searchbar.value,
+        result = `${contains == "does not contain" ? "-" : ""}${type == "anything" ? "" : `${type}:`}${term}`;
+
+    searchbar.value = `${search}${search.length > 0 ? " " : ""}${result}`;
+    searchBookmarks();
 }
 
-function showBookmarks(arr) {
-    arr.forEach(e => document.getElementById(`b${e["BookmarkID"]}`).classList.remove("hidden"));
+function changeSearchMode() {
+    let searchbar = HomeG.search.searchbar,
+        option = event.target.dataset.option;
+
+    searchbar.dataset[option] = event.target.checked;
+    searchBookmarks();
+}
+
+function displayBookmarks(arr, show = true) {
+    arr.forEach(e => document.getElementById(`b${e["BookmarkID"]}`).classList.toggle("hidden", !show));
 }
 
 function searchBookmarks() {
-    let filteredBookmarks = [];
-    if (this.value.length > 0) {
-        let terms = Cmn.regexEscape(this.value.trim()).split(" "),
-            titles = terms.filter(term => term.match(/(?<=(title|caption|label):)[^\s]*/gi)) || [],
-            urls = terms.filter(term => term.match(/(?<=(url|site|link):)[^\s]*/gi)) || [],
-            tags = terms.filter(term => term.match(/(?<=tag:)[^\s]*/gi)) || [],
-            prefixes = titles.concat(urls, tags),
-            unstrict = terms.filter(term => !prefixes.includes(term));
+    let filteredBookmarks = [],
+        searchbar = HomeG.search.searchbar;
 
-        if (!this.dataset.and) {
-            [titles, urls, tags, unstrict] = [titles, urls, tags, unstrict].map(arr => arr.length > 0 ? arr.join("|").replace(/(title|url|tag):/gi, "") : arr = "^ $");
-        } else {
-            [titles, urls, tags, unstrict] = [titles, urls, tags, unstrict].map(arr => arr.length > 0 ? arr = `(?=.*${arr.join(")(?=.*").replace(/(title|url|tag):/gi, "")}` : arr = "^ $");
-        }
+    if (searchbar.value.length > 0) {
+        let terms = searchbar.value.trim(),
+            regexes = [/(?<!-title:)(?<=title:)\S*/gi, /(?<!-url:)(?<=url:)\S*/gi, /(?<!-tag:)(?<=tag:)\S*/gi, /(?<=^|\s)(?!-|(title|tag|url):)\S*\S/gi, /(?<=-title:)\S*/gi, /(?<=-url:)\S*/gi, /(?<=-tag:)\S*/gi, /(?<=-(?!(title|url|tag):))\S*/gi],
+            [titles, urls, tags, any, negTitles, negUrls, negTags, negAny] = regexes.map(re => terms.match(re) || []),
+            isAnd = (searchbar.dataset.and == "true"),
+            wholeDelim = searchbar.dataset.whole == "true" ? "\\b" : "",
+            prefix = `${isAnd ? "(?=.*" : ".*"}${wholeDelim}`,
+            suffix = `${wholeDelim}${isAnd ? ")" : ""}.*`;
 
-        let reTitle = new RegExp(!this.dataset.fullWord ? titles : `^${titles}$`, "i"),
-            reURL = new RegExp(!this.dataset.fullWord ? urls : `^${urls}$`, "i"),
-            reTag = new RegExp(!this.dataset.fullWord ? tags : `^${tags}$`, "i"),
-            reUnstrict = new RegExp(!this.dataset.fullWord ? unstrict : `^${unstrict}$`, "i");
+        [titles, urls, tags, any, negTitles, negUrls, negTags, negAny] = [titles, urls, tags, any, negTitles, negUrls, negTags, negAny].map(arr => arr.length > 0 ? `${prefix}${arr.join(`${wholeDelim}${isAnd ? ")(?=.*" : "|"}`)}${suffix}` : "");
+
+        let hasPositives = [titles, urls, tags, any].some(e => e.length > 0),
+            hasNegatives = [negTitles, negUrls, negTags, negAny].some(e => e.length > 0),
+            [reTitle, reURL, reTag, reAny, reNegTitle, reNegURL, reNegTag, reNegAny] = [titles, urls, tags, any, negTitles, negUrls, negTags, negAny].map(arr => RegExp(`^${arr}$`, "i"));
 
         filteredBookmarks = HomeG.bookmarks.filter(bk => {
-            return reTitle.test(bk["Title"]) || reURL.test(bk["PageURL"]) || reTag.test(bk["Tags"]) ||
-                reUnstrict.test(bk["Title"]) || reUnstrict.test(bk["PageURL"]) || reUnstrict.test(bk["Tags"]);
+            let [title, pageUrl, tags] = [bk.Title, bk.PageURL, bk.Tags.length > 0 ? bk.Tags : [null]];
+            return ( !reNegTitle.test(title) && !reNegURL.test(pageUrl) && !tags.some(tag => reNegTag.test(tag)) && ![title, pageUrl, tags].flat().some(term => reNegAny.test(term)) )
+                    && ( reTitle.test(title) || reURL.test(pageUrl) || tags.some(tag => reTag.test(tag)) || [title, pageUrl, tags].flat().some(term => reAny.test(term)) || (!hasPositives && hasNegatives));
         });
 
-        hideBookmarks(HomeG.bookmarks);
-        showBookmarks(filteredBookmarks);
+        displayBookmarks(HomeG.bookmarks, false);
+        displayBookmarks(filteredBookmarks);
         bookmarksEmpty(filteredBookmarks);
     } else {
-        hideBookmarks(filteredBookmarks);
+        displayBookmarks(filteredBookmarks, false);
         bookmarksEmpty(HomeG.bookmarks);
-        showBookmarks(HomeG.bookmarks);
+        displayBookmarks(HomeG.bookmarks);
     }
 }
 
@@ -441,7 +516,6 @@ function createTag(tagText, tagsCtn) {
     tagX.addEventListener("click", () => {
         let tagBtn = document.getElementById("tag-btn");
         tagBtn.classList.remove("del");
-        tagBtn.classList.add("add");
         removeTag(tagText);
     });
 
@@ -451,8 +525,8 @@ function createTags(arr, tagsCtn) {
     arr.forEach(tagText => { createTag(tagText, tagsCtn); });
 }
 
-function hideTags(arr) {
-    arr.forEach(e => document.getElementById(`tag-${e}`).classList.add("hidden"));
+function displayTags(arr, show = true) {
+    arr.forEach(e => document.getElementById(`tag-${e}`).classList.toggle("hidden", !show));
 }
 
 function removeTag(tagText) {
@@ -461,17 +535,13 @@ function removeTag(tagText) {
     HomeG.tags = HomeG.tags.filter(e => e !== tagText);
 }
 
-function showTags(arr) {
-    arr.forEach(e => document.getElementById(`tag-${e}`).classList.remove("hidden"));
-}
-
 function searchTags() {
     let tagBtn = document.getElementById("tag-btn");
     if (this.value.length > 0) {
         let reTag = new RegExp(Cmn.regexEscape(this.value), "i"),
             tagsActive = HomeG.tags.filter(e => { return reTag.test(e); });
-        hideTags(HomeG.tags);
-        showTags(tagsActive);
+        displayTags(HomeG.tags, false);
+        displayTags(tagsActive);
         if (HomeG.tags.includes(this.value)) {
             tagBtn.classList.remove("add");
             tagBtn.classList.add("del");
@@ -480,17 +550,17 @@ function searchTags() {
             tagBtn.classList.add("add");
         }
     } else {
-        showTags(HomeG.tags);
+        displayTags(HomeG.tags);
         tagBtn.classList.remove("del", "add");
     }
 }
 
 function updateTag() {
-    let input = HomeG.tagSearch,
+    let input = HomeG.tag.search,
         tagText = input.value;
     if (this.classList.contains("add")) {
         HomeG.tags.push(tagText);
-        createTag(tagText, HomeG.tagsCtn);
+        createTag(tagText, HomeG.tag.container);
         input.value = "";
         this.classList.remove("add");
     } else if (this.classList.contains("del")) {

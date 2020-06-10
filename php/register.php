@@ -12,7 +12,7 @@ try {
         if(empty($email) || empty($username) || empty($password) || empty($passwordConf)) {
             echo json_encode(["Success" => false, "Message" => "All fields are required"]);
         } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            echo json_encode(["Success" => false, "Message" => "Enter a valid email"]);
+            echo json_encode(["Success" => false, "Message" => "Invalid email"]);
         } else if (strlen($username) > 40) {
             echo json_encode(["Success" => false, "Message" => "Username cannot be more than 40 characters"]);
         } else if (getUser($username)) {
