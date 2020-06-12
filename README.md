@@ -14,6 +14,9 @@
 ---
 # Changelog
 *The version histories below do not account for all changes made as documentation is written from the To-Do-List in the following major section and from memory prior to each commit. Additionally, minor changes are typically not recorded in the changelog or in the To-Do-List. Analysis of the differences on GitHub can be used to identify undocumented changes when necessary.*
+## Version 1.02 &nbsp;-&nbsp; (2020-06-12)
+* Fixed incomplete query in `updateProfile(...)` in `db-functions.php` causing updates to all rows
+
 ## Version 1.01 &nbsp;-&nbsp; (2020-06-06)
 * Compressed repetitive variable assignment in `searchBookmarks()` even further using destructuring and mapping
 * Fixed typo in function call on register page throwing fatal error

@@ -101,7 +101,7 @@ function updateProfile(int $userID, string $email, string $username) {
     GLOBAL $conn;
     $query = "UPDATE      User AS u, Logins AS l
               SET         u.Email = :email, l.Username = :username
-              WHERE       u.UserID = :userID;";
+              WHERE       u.UserID = l.UserID AND u.UserID = :userID;";
     $stmt = $conn->prepare($query);
     $stmt->bindParam(":userID", $userID);
     $stmt->bindParam(":email", $email);
