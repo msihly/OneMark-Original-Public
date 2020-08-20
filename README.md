@@ -1,3 +1,7 @@
+# Deprecation
+## *This edition of OneMark has been deprecated. View the latest edition at the [OneMark Repository](https://github.com/msihly/OneMark).*
+
+---
 # What is OneMark?
 ### [OneMark](https://onemark.herokuapp.com) is a visual-centric bookmark organizer designed for cross-platform use with a sleek, modern interface.
 
